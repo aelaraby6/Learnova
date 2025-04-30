@@ -4,9 +4,9 @@ import footerComponent from "./components/footer.js"
 document.addEventListener("DOMContentLoaded", () => {
     const app = document.getElementById("app");
 
-    app.insertAdjacentHTML('beforebegin' , headerComponent());
+    app.insertAdjacentHTML("beforebegin", addHeader());
 
-    app.insertAdjacentHTML('afterend' , footerComponent());
+    app.insertAdjacentHTML("afterend", addFooter());
 
 
     const menuBtn = document.getElementById('menu-btn');
@@ -16,3 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
         menu.classList.toggle('hidden');
     });
 });
+
+const addHeader = (_) => headerComponent();
+const addFooter = (_) => footerComponent();
