@@ -1,27 +1,30 @@
-import headerComponent from "./components/header.js";
-import footerComponent from "./components/footer.js";
-import heroComponents from "./components/hero.js";
-import featuredTeacherComponent from "./components/featured_teacher.js";
+import headerComponent from "./components/header.js"
+import footerComponent from "./components/footer.js"
+import SignUp from "./pages/Auth/SignUp.js"
+import Login from "./pages/Auth/Login.js"
 
-document.addEventListener("DOMContentLoaded", () => {
-  const app = document.getElementById("app");
+const app = document.getElementById("app");
 
-  app.insertAdjacentHTML("beforebegin", addHeader());
+function render(component) {
+    app.innerHTML = "";
+    app.appendChild(component());
+}
 
-  app.insertAdjacentHTML("afterbegin", addHero());
-  app.insertAdjacentHTML("beforeend", addFeaturedTeacher());
 
-  app.insertAdjacentHTML("afterend", addFooter());
+render(SignUp);
 
-  const menuBtn = document.getElementById("menu-btn");
-  const menu = document.getElementById("menu");
+document.addEventListener("click", (e) => {
+    const target = e.target;
 
-  menuBtn.addEventListener("click", () => {
-    menu.classList.toggle("hidden");
-  });
-});
+    if(target.matches("a[href='#signup']")){
+        e.preventDefault();
+        render(SignUp);
+    }
 
-const addHeader = (_) => headerComponent();
-const addHero = (_) => heroComponents();
-const addFooter = (_) => footerComponent();
-const addFeaturedTeacher = (_) => featuredTeacherComponent();
+    if(target.matches("a[href='#login']")){
+        e.preventDefault();
+        render(Login);
+    }
+})
+
+
