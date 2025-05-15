@@ -2,6 +2,10 @@ import headerComponent from "./components/header.js"
 import footerComponent from "./components/footer.js"
 import SignUp from "./pages/Auth/SignUp.js"
 import Login from "./pages/Auth/Login.js"
+import heroComponents from "./components/hero.js"
+import featuredTeacherComponent from "./components/featured_teacher.js"
+import AboutUS from "./components/aboutus.js"
+import Cart from "./components/cart.js"
 
 const app = document.getElementById("app");
 
@@ -10,8 +14,8 @@ function render(component) {
     app.appendChild(component());
 }
 
+app.insertAdjacentHTML('beforeend' , Cart());
 
-render(SignUp);
 
 document.addEventListener("click", (e) => {
     const target = e.target;
@@ -26,5 +30,3 @@ document.addEventListener("click", (e) => {
         render(Login);
     }
 })
-
-
