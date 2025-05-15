@@ -6,6 +6,7 @@ import heroComponents from "./components/hero.js"
 import featuredTeacherComponent from "./components/featured_teacher.js"
 import AboutUS from "./components/aboutus.js"
 import Cart from "./components/cart.js"
+import userProfile from "./components/user_profile.js"
 
 const app = document.getElementById("app");
 
@@ -14,8 +15,7 @@ function render(component) {
     app.appendChild(component());
 }
 
-app.insertAdjacentHTML('beforeend' , Cart());
-
+render(SignUp);
 
 document.addEventListener("click", (e) => {
     const target = e.target;

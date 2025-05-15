@@ -1,7 +1,8 @@
 export default function featuredTeacherComponent() {
-  return `
-   <!-- Hero -->
-  <div class="max-w-[85rem] mx-auto my-2 px-4 sm:px-6 lg:px-8">
+  const featuredTeacher = document.createElement("div");
+  // <!-- Hero -->
+  featuredTeacher.className = "max-w-[85rem] mx-auto my-2 px-4 sm:px-6 lg:px-8";
+  featuredTeacher.innerHTML = `
   <!-- Grid -->
   <div class="grid md:grid-cols-2 gap-4 md:gap-8 xl:gap-20 md:items-center">
     <div>
@@ -40,6 +41,6 @@ export default function featuredTeacherComponent() {
     <!-- End Col -->
   </div>
   <!-- End Grid -->
-</div>
 <!-- End Hero -->`;
+  return featuredTeacher;
 }

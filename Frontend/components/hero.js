@@ -1,5 +1,6 @@
 export default function heroComponents() {
-  return `
+  const hero = document.createElement("div");
+  hero.innerHTML = `
   <!-- Hero -->
   <div class="max-w-[85rem] mx-auto my-2 px-4 sm:px-6 lg:px-8">
   <!-- Grid -->
@@ -106,4 +107,5 @@ export default function heroComponents() {
   <!-- End Grid -->
 </div>
 <!-- End Hero -->`;
+return hero;
 }
