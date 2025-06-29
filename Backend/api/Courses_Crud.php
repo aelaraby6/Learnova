@@ -9,85 +9,82 @@ $connection = $data->connect();  // الارتباط مع الداتا بيز و
 
 $method = $_SERVER['REQUEST_METHOD']; // معرفة نوع الطلب
 
-if ($method==='GET')
+
+if ($method==='GET') // عرض كل المدرسين
 {
-    $query = " select t1.course_id,t1.title,t1.description,t3.name category_name ,t1.category_id,t1.price,t1.image,t4.name teacher_name ,t1.teacher_id,t1.duration , t1.created_at , t1.updated_at from courses t1
-              join teacher t2 ON t1.teacher_id = t2.teacher_id   join categories t3 ON t1.category_id = t3.category_id join user t4 ON t2.user_id=t4.user_id where t1.is_deleted = 0";
+    $query = " SELECT t.teacher_id, t.bio, t.profile_picture, t.facebook_link, t.linkedin_link, t.twitter_link, u.user_id, u.name, u.email, u.created_at FROM teacher t
+              JOIN user u ON u.user_id = t.user_id";
+
     $order = $connection->prepare($query);
     $order->execute();
-    $courses = $order->fetchAll(PDO::FETCH_ASSOC);
-    echo json_encode($courses);
-    // تجهيز و تنفيذ الامر  ووضعه في اراي وارجاعه ك Json
+    $teachers = $order->fetchAll(PDO::FETCH_ASSOC);
+    echo json_encode($teachers);
 }
 else if ($method==='POST')
 {
-    if (!isset($input['teacher_id']))
+    if (!isset($input['user_id']))
     {
         http_response_code(400);
-        echo json_encode(['error' => 'Teacher ID is Required']);
+        echo json_encode(['error' => ' User ID is not found ']);
     }
     else
     {
-        $query = "INSERT INTO courses (title,description,category_id,price,image,teacher_id,duration)
-                  VALUES ( :title, :description, :category_id, :price, :image,:teacher_id, :duration)";
+        $query = "INSERT INTO teacher (user_id, bio, profile_picture, facebook_link, linkedin_link, twitter_link)
+                  VALUES (:user_id, :bio, :profile_picture, :facebook_link, :linkedin_link, :twitter_link)";
 
 
         $order = $connection->prepare($query);
-        $Flag = $order->execute([
-            ':title' => $input['title'],
-            ':description' => $input['description'],
-            ':category_id' => $input['category_id'],
-            ':price' => $input['price'],
-            ':image' => $input['image'],
-            ':teacher_id' => $input['teacher_id'],
-            ':duration' => $input['duration'],
-        ]);
+        $order->bindParam(':user_id', $input['user_id']);
+        $order->bindParam(':bio', $input['bio']);
+        $order->bindParam(':profile_picture', $input['profile_picture']);
+        $order->bindParam(':facebook_link', $input['facebook_link']);
+        $order->bindParam(':linkedin_link', $input['linkedin_link']);
+        $order->bindParam(':twitter_link', $input['twitter_link']);
 
 
-        if ($Flag) echo json_encode(['message' => 'Course added Successfully']);
-        else echo json_encode(['error' => 'Failed to add Course']);
-        // تجهيز و تنفيذ الامر  وارجاعه رسالة ك Json
+        if ($order->execute()) echo json_encode(['message' => 'Teacher added Successfully']);
+        else echo json_encode(['error' => 'Failed to add teacher']);
     }
 }
 else if ($method==='PUT')
 {
-    if (!isset($input['course_id'])) // لو اليوزر مش موجود اصلا
+    if (!isset($input['teacher_id']))
     {
         http_response_code(400);
-        echo json_encode(['error' => ' Course is not found']);
+        echo json_encode(['error' => 'Teacher ID is not found']);
     }
     else
     {
-        $query = "update courses set  title = :title, description = :description, price = :price , image = :image , duration = :duration , teacher_id = :teacher_id where is_deleted = 0 and course_id = :course_id";
+        $query = "UPDATE teacher SET bio = :bio, profile_picture = :profile_picture, facebook_link = :facebook_link, linkedin_link = :linkedin_link, twitter_link = :twitter_link
+                  WHERE teacher_id = :teacher_id";
+
 
         $order = $connection->prepare($query);
-        $Flag = $order->execute([':course_id' => $input['course_id'],
-            ':title' => $input['title'],
-            ':description' => $input['description'],
-            ':price' => $input['price'],
-            ':image' => $input['image'],
-            ':duration' => $input['duration'],
-            ':teacher_id' => $input['teacher_id'],
-        ]);
-        if ($Flag) echo json_encode(['message' => ' Course is updated']);
-        else echo json_encode(['error' => 'Failed to udpate the Course ']);
-        // تجهيز و تنفيذ الامر  وارجاعه رسالة ك Json
+        $order->bindParam(':teacher_id', $input['teacher_id']);
+        $order->bindParam(':bio', $input['bio']);
+        $order->bindParam(':profile_picture', $input['profile_picture']);
+        $order->bindParam(':facebook_link', $input['facebook_link']);
+        $order->bindParam(':linkedin_link', $input['linkedin_link']);
+        $order->bindParam(':twitter_link', $input['twitter_link']);
+
+        if ($order->execute())  echo json_encode(['message' => ' the data of teacher is updated']);
+        else echo json_encode(['error' => 'Failed to udpate date of the teacher']);
     }
 }
-else if ($method==='DELETE')
+else if ($method === 'DELETE')
 {
-    if (!isset($input['course_id']))
+    if (!isset($input['teacher_id']))
     {
         http_response_code(400);
-        echo json_encode(['error' => ' Course is not found']);
+        echo json_encode(['error' => ' Teacher ID is not found']);
     }
     else
     {
-        $order = $connection->prepare("update courses set is_deleted = 1 where course_id = :course_id");
-        $flag = $order->execute([':course_id' => $input['course_id']]);
-        if ($flag) echo json_encode(['message' => 'Course deleted']);
-        else echo json_encode(['error' => 'Failed to delete Course']);
-        // تجهيز و تنفيذ الامر  ووضعه في اراي وارجاعه رسالة ك Json
+        $order = $connection->prepare("DELETE FROM teacher WHERE teacher_id = :teacher_id");
+
+        $order->bindParam(':teacher_id', $input['teacher_id']);
+        if ($order->execute())  echo json_encode(['message' => 'Teacher deleted']);
+        else echo json_encode(['error' => 'Failed to delete teacher']);
     }
 }
 ?>
