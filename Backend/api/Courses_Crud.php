@@ -17,7 +17,6 @@ if ($method==='GET')
     $order->execute();
     $courses = $order->fetchAll(PDO::FETCH_ASSOC);
     echo json_encode($courses);
-    // تجهيز و تنفيذ الامر  ووضعه في اراي وارجاعه ك Json
 }
 else if ($method==='POST')
 {
@@ -46,12 +45,11 @@ else if ($method==='POST')
 
         if ($Flag) echo json_encode(['message' => 'Course added Successfully']);
         else echo json_encode(['error' => 'Failed to add Course']);
-        // تجهيز و تنفيذ الامر  وارجاعه رسالة ك Json
     }
 }
 else if ($method==='PUT')
 {
-    if (!isset($input['course_id'])) // لو اليوزر مش موجود اصلا
+    if (!isset($input['course_id'])) 
     {
         http_response_code(400);
         echo json_encode(['error' => ' Course is not found']);
@@ -71,7 +69,6 @@ else if ($method==='PUT')
         ]);
         if ($Flag) echo json_encode(['message' => ' Course is updated']);
         else echo json_encode(['error' => 'Failed to udpate the Course ']);
-        // تجهيز و تنفيذ الامر  وارجاعه رسالة ك Json
     }
 }
 else if ($method==='DELETE')
@@ -87,6 +84,5 @@ else if ($method==='DELETE')
         $flag = $order->execute([':course_id' => $input['course_id']]);
         if ($flag) echo json_encode(['message' => 'Course deleted']);
         else echo json_encode(['error' => 'Failed to delete Course']);
-        // تجهيز و تنفيذ الامر  ووضعه في اراي وارجاعه رسالة ك Json
     }
 }
