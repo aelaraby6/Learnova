@@ -70,7 +70,7 @@ else if ($method==='PUT') // تعديل مدرس موجود
             ':twitter_link' => $input['twitter_link']
         ]);
         if ($Flag) echo json_encode(['message' => ' the data of teacher is updated']);
-        else echo json_encode(['error' => 'Failed to udpate date of the teacher']);
+        else echo json_encode(['error' => 'Failed to udpate data of the teacher']);
         // تجهيز و تنفيذ الامر  وارجاعه رسالة ك Json
     }
 }
