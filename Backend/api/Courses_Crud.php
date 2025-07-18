@@ -2,13 +2,12 @@
 
 require_once('../Database/Database.php');
 
-$input = json_decode(file_get_contents("php://input"), true); // استلام الطلب
+$input = json_decode(file_get_contents("php://input"), true); 
 
-$data = new Database() ; // الاتصال مع الداتا بيز
-$connection = $data->connect();  // الارتباط مع الداتا بيز و كل الداتا ظاهرة دلوقتي
+$data = new Database() ;
+$connection = $data->connect(); 
 
-$method = $_SERVER['REQUEST_METHOD']; // معرفة نوع الطلب
-
+$method = $_SERVER['REQUEST_METHOD'];
 if ($method==='GET')
 {
     $query = " select t1.course_id,t1.title,t1.description,t3.name category_name ,t1.category_id,t1.price,t1.image,t4.name teacher_name ,t1.teacher_id,t1.duration , t1.created_at , t1.updated_at from courses t1
