@@ -1,9 +1,10 @@
 import './App.css'
-import Login from './Pages/Auth/Login/Login'
-
+import Error404 from './components/Error404'
+// import Login from './Pages/Auth/Login/Login'
 // import Header from './components/Header'
 // import Footer from './components/Footer'
-import Signup from './Pages/Auth/SignUp/Signup'
+// import Signup from './Pages/Auth/SignUp/Signup'
+// import Error403 from './components/Error403'
 
 function App() {
 
@@ -12,7 +13,8 @@ function App() {
       {/* <Header />
       <Footer /> */}
       {/* <Signup/> */}
-      <Login/>
+      {/* <Login/> */}
+      <Error404/>
     </>
   )
 }
