@@ -1,6 +1,7 @@
 import './App.css'
-import { CartProvider } from './context/CartContext'
-import Cart from './components/Cart'
+import ProfilePage from './Pages/Profile/ProfilePage'
+// import { CartProvider } from './context/CartContext'
+// import Cart from './components/Cart'
 // import Error404 from './components/Error404'
 // import Login from './Pages/Auth/Login/Login'
 // import Header from './components/Header'
@@ -11,14 +12,16 @@ import Cart from './components/Cart'
 function App() {
 
   return (
-    <CartProvider>
-      {/* <Header />
-      <Footer /> */}
-      {/* <Signup/> */}
-      {/* <Login/> */}
-      {/* <Error404/> */}
-      <Cart />
-    </CartProvider>
+  //  <CartProvider>
+  //     {/* <Header />
+  //    <Footer /> 
+  //     {/* <Signup/> */}
+  //     {/* <Login/> */}
+  //     {/* <Error404/> */}
+  //     {/* <Cart />
+  //   </CartProvider> */}
+      <ProfilePage/>
+
   )
 }
 
