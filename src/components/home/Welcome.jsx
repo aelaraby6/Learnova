@@ -11,6 +11,10 @@ export default function Welcome() {
 
   return (
     <div className="relative flex flex-col md:flex-row items-center justify-between h-screen bg-white">
+      
+      {/* Right Blue Div */}
+      <div className="absolute top-0 right-0 h-full w-1/3 bg-blue-900 z-0"></div>
+
       {/* Left Decorative Circle (Top Left) */}
       <div
         className="absolute -top-16 -left-16 w-64 h-64 rounded-full z-20"
@@ -22,7 +26,7 @@ export default function Welcome() {
 
       {/* Right Decorative Circle (Bottom Right) */}
       <div
-        className="absolute -bottom-16 -right-16 w-64 h-64 rounded-full z-0"
+        className="absolute -bottom-16 -right-16 w-64 h-64 rounded-full z-10"
         style={{
           backgroundColor: "#f99d76",
           transform: `translateY(-${scrollY * 0.2}px)`,
@@ -30,7 +34,7 @@ export default function Welcome() {
       ></div>
 
       {/* Left Section */}
-      <div className="md:w-1/2 p-8 md:p-16 flex flex-col justify-center z-10">
+      <div className="md:w-1/2 p-8 md:p-16 flex flex-col justify-center z-20">
         <h1 className="text-4xl md:text-5xl font-bold text-blue-900 mb-4">
           Grow your skills,
           <br /> define your future
@@ -50,7 +54,7 @@ export default function Welcome() {
       </div>
 
       {/* Right Section */}
-      <div className="md:w-1/2 relative flex items-center justify-center md:justify-end z-10">
+      <div className="md:w-1/2 relative flex items-center justify-center md:justify-end z-20">
         <img
           src="/assets/images/welcome.jpeg"
           alt="Person using laptop"
