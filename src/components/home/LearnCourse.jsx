@@ -1,4 +1,4 @@
-import "../../styles/global.css"
+import "../../styles/global.css";
 
 const LearnCourse = () => {
   return (
@@ -7,11 +7,32 @@ const LearnCourse = () => {
         Why learn with our courses?
       </h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-8 lg:px-12 xl:px-16">
-        <LearnCourseBenefits imgSrc={"assets/learn_course_1.svg"} title={"1. Learn"} description={"Lorem ipsum, dolor sit amet consectetur adipisicing elit. Corrupti, voluptas!"} />
-        <LearnCourseBenefits imgSrc={"assets/graduate_course_2.svg"} title={"2. Graduate"} description={"Lorem ipsum, dolor sit amet consectetur adipisicing elit. Corrupti, voluptas!"} />
-        <LearnCourseBenefits imgSrc={"assets/work_course_3.svg"} title={"3. work"} description={"Lorem ipsum, dolor sit amet consectetur adipisicing elit. Corrupti, voluptas!"} />
+        <LearnCourseBenefits
+          imgSrc={"assets/learn_course_1.svg"}
+          title={"1. Learn"}
+          description={
+            "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Corrupti, voluptas!"
+          }
+        />
+        <LearnCourseBenefits
+          imgSrc={"assets/graduate_course_2.svg"}
+          title={"2. Graduate"}
+          description={
+            "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Corrupti, voluptas!"
+          }
+        />
+        <LearnCourseBenefits
+          imgSrc={"assets/work_course_3.svg"}
+          title={"3. work"}
+          description={
+            "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Corrupti, voluptas!"
+          }
+        />
       </div>
-      <div className="absolute left-0 right-0 flex justify-center" style={{ bottom: '-116px' }}>
+      <div
+        className="absolute left-0 right-0 flex justify-center"
+        style={{ bottom: "-116px" }}
+      >
         <img src="assets/arrow.svg" alt="" />
       </div>
     </section>
