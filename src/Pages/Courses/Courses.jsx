@@ -1,8 +1,11 @@
 import Footer from "../../components/Footer";
+import Header from "../../components/Header";
+import CourseCatalog from "../../components/Courses/CourseCatalog";
 
 export default function Courses() {
   return (
     <>
+      <Header />
       {/* Outer wrapper allows arrow to overflow */}
       <div className="relative overflow-visible">
         {/* Hero Section */}
@@ -127,6 +130,8 @@ export default function Courses() {
           </div>
         </div>
       </section>
+
+      <CourseCatalog />
 
       <Footer />
     </>

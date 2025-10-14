@@ -8,39 +8,60 @@ export default function CourseCard({
   instructorImage,
 }) {
   return (
-    <div className="w-full max-w-md rounded-2xl shadow-lg overflow-hidden bg-white transform transition-transform duration-500 hover:scale-105">
-      {/* Image Section */}
-      <div className="relative overflow-hidden">
-        <img src={image} alt={title} className="w-full h-56 object-cover" />
+    <div className="group w-full rounded-2xl shadow-md hover:shadow-xl overflow-hidden bg-white transition-all duration-300 hover:-translate-y-1">
+      {/* Image Section with Overlay Effect */}
+      <div className="relative overflow-hidden h-48 sm:h-52 md:h-56 lg:h-60">
+        <img
+          src={image}
+          alt={title}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+        />
 
-        {/* Time & Price container */}
-        <div className="absolute top-4 right-4 flex items-center gap-2">
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+        {/* Duration & Price Badges */}
+        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex items-center gap-1.5 sm:gap-2">
           {duration && (
-            <span className="bg-white/90 text-gray-900 text-sm font-medium px-3 py-1 rounded-full shadow">
+            <span className="backdrop-blur-md bg-white/95 text-gray-800 text-xs sm:text-sm font-semibold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full shadow-lg border border-gray-100">
               {duration}
             </span>
           )}
           {price && (
-            <span className="bg-[var(--Primary-1)] text-white text-sm font-semibold px-3 py-1 rounded-full shadow">
+            <span className="bg-blue-600 text-white text-xs sm:text-sm font-bold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full shadow-lg hover:bg-blue-700 transition-colors duration-200">
               {price}
             </span>
           )}
         </div>
       </div>
 
-      {/* Content */}
-      <div className="p-6">
-        <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-        <p className="text-gray-500 mt-2 mb-2 text-sm">{description}</p>
+      {/* Content Section */}
+      <div className="p-4 sm:p-5 md:p-6">
+        <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-200 line-clamp-1">
+          {title}
+        </h3>
+        <p className="text-gray-600 text-sm sm:text-base leading-relaxed line-clamp-2 mb-3 sm:mb-4">
+          {description}
+        </p>
 
-        {/* Instructor */}
-        <div className="flex items-center gap-3 mt-4">
-          <img
-            src={instructorImage}
-            alt={instructorName}
-            className="w-10 h-10 rounded-full border"
-          />
-          <span className="font-medium text-gray-900">{instructorName}</span>
+        {/* Instructor Section */}
+        <div className="flex items-center gap-2.5 sm:gap-3 pt-3 sm:pt-4 border-t border-gray-100">
+          <div className="relative flex-shrink-0">
+            <img
+              src={instructorImage}
+              alt={instructorName}
+              className="w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 rounded-full object-cover border-2 border-gray-200 group-hover:border-blue-500 transition-colors duration-200"
+            />
+            <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-white"></div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <span className="font-semibold text-gray-900 text-xs sm:text-sm md:text-base block truncate">
+              {instructorName}
+            </span>
+            <span className="text-[10px] sm:text-xs text-gray-500">
+              Course Instructor
+            </span>
+          </div>
         </div>
       </div>
     </div>
