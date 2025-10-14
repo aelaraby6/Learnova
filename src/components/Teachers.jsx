@@ -1,81 +1,8 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import { teachersData } from "../data/teachersData";
 
 const Teachers = () => {
-  const teachersData = [
-    {
-      id: 1,
-      name: "John Carter",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur dolorii adipiscing elit.",
-      image: "/assets/images/teacher-1.jpg",
-      socialLinks: {
-        linkedin: "#",
-        twitter: "#",
-        facebook: "#",
-      },
-    },
-    {
-      id: 2,
-      name: "Sophie Moore",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur dolorii adipiscing elit.",
-      image: "/assets/images/teacher-2.jpg",
-      socialLinks: {
-        linkedin: "#",
-        twitter: "#",
-        facebook: "#",
-      },
-    },
-    {
-      id: 3,
-      name: "Matt Cannon",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur dolorii adipiscing elit.",
-      image: "/assets/images/teacher-3.jpg",
-      socialLinks: {
-        linkedin: "#",
-        twitter: "#",
-        facebook: "#",
-      },
-    },
-    {
-      id: 4,
-      name: "Kathie Corl",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur dolorii adipiscing elit.",
-      image: "/assets/images/teacher-4.jpg",
-      socialLinks: {
-        linkedin: "#",
-        twitter: "#",
-        facebook: "#",
-      },
-    },
-    {
-      id: 5,
-      name: "Mike Warren",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur dolorii adipiscing elit.",
-      image: "/assets/images/teacher-5.jpg",
-      socialLinks: {
-        linkedin: "#",
-        twitter: "#",
-        facebook: "#",
-      },
-    },
-    {
-      id: 6,
-      name: "Andy Smith",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur dolorii adipiscing elit.",
-      image: "/assets/images/teacher-6.jpg",
-      socialLinks: {
-        linkedin: "#",
-        twitter: "#",
-        facebook: "#",
-      },
-    },
-  ];
-
   return (
     <section className="py-16 sm:py-20 lg:py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -109,9 +36,10 @@ const Teachers = () => {
           <div className="w-full">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {teachersData.map((teacher) => (
-                <div
+                <Link
                   key={teacher.id}
-                  className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
+                  to={`/instructor/${teacher.id}`}
+                  className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 block"
                 >
                   {/* Teacher image */}
                   <div className="w-full h-[348px] overflow-hidden">
@@ -187,7 +115,7 @@ const Teachers = () => {
                       </a>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
