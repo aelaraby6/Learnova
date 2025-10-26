@@ -1,4 +1,6 @@
-const Error404 = () => {
+import { Link } from "react-router-dom";
+
+export default function Error404() {
   return (
     <div className="flex items-center w-screen h-screen bg-gray-300">
       <div className="container flex flex-col items-center justify-between px-5 text-gray-700 md:flex-row">
@@ -9,12 +11,13 @@ const Error404 = () => {
           <p className="mb-8 text-2xl font-light leading-normal md:text-3xl">
             Sorry we couldn't find the page you're looking for
           </p>
-          <a 
-            href="#" 
-            className="inline px-5 py-3 text-sm font-medium leading-5 text-white transition-all shadow-2xl rounded-lg border-transparent border bg-[#064EA4] duration-400 focus:outline-none active:bg-red-600 hover:bg-red-700"
+          <Link 
+            to="/" 
+            className="inline px-5 py-3 text-sm font-medium leading-5 text-white transition-all shadow-2xl
+             rounded-lg border-transparent border bg-[#064EA4] duration-400 focus:outline-none active:bg-red-600 hover:bg-[#043570]"
           >
             back to homepage
-          </a>
+          </Link>
         </div>
         <div className="w-full mx-5 my-12 lg:flex lg:justify-end lg:w-1/2">
           <img 
@@ -26,6 +29,4 @@ const Error404 = () => {
       </div>
     </div>
   );
-};
-
-export default Error404;
+}

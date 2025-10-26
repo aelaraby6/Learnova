@@ -1,24 +1,36 @@
 import { useState } from "react";
-import "../styles/global.css"
+import { Link, useNavigate } from "react-router-dom";
+import "../styles/global.css";
 
-const Header = () => {
+export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
-  const toggleMenu = () => {
+  function toggleMenu() {
     setIsMenuOpen(!isMenuOpen);
-  };
+  }
+
+  function handleSignup() {
+    navigate("/signup");
+    setIsMenuOpen(false);
+  }
+
+  function handleLogin() {
+    navigate("/login");
+    setIsMenuOpen(false);
+  }
 
   return (
     <header className="fixed top-0 left-0 w-full bg-white shadow-md z-50">
       <div className="container mx-auto flex justify-between items-center p-4 md:px-8 lg:px-12">
         {/* Logo */}
         <div className="logo">
-          <a
-            href="#"
+          <Link
+            to="/"
             className="learnnova-logo text-2xl font-bold text-[var(--Primary-1)]"
           >
             LearnNova
-          </a>
+          </Link>
         </div>
 
         {/* Mobile Menu Button */}
@@ -40,36 +52,40 @@ const Header = () => {
           py-8 md:py-0 px-8 md:px-0 shadow-md md:shadow-none`}
         >
           <li>
-            <a
-              href="#"
+            <Link
+              to="/home"
+              onClick={() => setIsMenuOpen(false)}
               className="text-base font-medium text-[var(--Primary-2)] hover:text-[var(--Secondary-2)] transition-all duration-300"
             >
               Home
-            </a>
+            </Link>
           </li>
           <li>
-            <a
-              href="#"
+            <Link
+              to="/about"
+              onClick={() => setIsMenuOpen(false)}
               className="text-base font-medium text-[var(--Primary-2)] hover:text-[var(--Secondary-2)] transition-all duration-300"
             >
               About
-            </a>
+            </Link>
           </li>
           <li>
-            <a
-              href="#"
+            <Link
+              to="/courses"
+              onClick={() => setIsMenuOpen(false)}
               className="text-base font-medium text-[var(--Primary-2)] hover:text-[var(--Secondary-2)] transition-all duration-300"
             >
               Courses
-            </a>
+            </Link>
           </li>
           <li>
-            <a
-              href="#"
+            <Link
+              to="/teachers"
+              onClick={() => setIsMenuOpen(false)}
               className="text-base font-medium text-[var(--Primary-2)] hover:text-[var(--Secondary-2)] transition-all duration-300"
             >
               Teachers
-            </a>
+            </Link>
           </li>
           <li>
             <button className="text-xl text-[var(--Primary-2)] hover:text-[var(--Secondary-2)] transition-all duration-300 my-2 md:my-0 mx-2 md:mx-0 whitespace-nowrap">
@@ -77,12 +93,18 @@ const Header = () => {
             </button>
           </li>
           <li>
-            <button className="signup-btn border border-[var(--Primary-2)] text-[var(--Primary-2)] font-semibold px-4 py-2 rounded hover:bg-[var(--Secondary-2)] hover:text-black transition-all duration-300 whitespace-nowrap">
+            <button
+              onClick={handleSignup}
+              className="signup-btn border border-[var(--Primary-2)] text-[var(--Primary-2)] font-semibold px-4 py-2 rounded hover:bg-[var(--Secondary-2)] hover:text-black transition-all duration-300 whitespace-nowrap"
+            >
               Sign Up
             </button>
           </li>
           <li>
-            <button className="login-btn border border-[var(--Primary-2)] text-[var(--Primary-2)] font-semibold px-4 py-2 rounded hover:bg-[var(--Secondary-2)] hover:text-black transition-all duration-300 whitespace-nowrap">
+            <button
+              onClick={handleLogin}
+              className="login-btn border border-[var(--Primary-2)] text-[var(--Primary-2)] font-semibold px-4 py-2 rounded hover:bg-[var(--Secondary-2)] hover:text-black transition-all duration-300 whitespace-nowrap"
+            >
               Login
             </button>
           </li>
@@ -90,6 +112,4 @@ const Header = () => {
       </div>
     </header>
   );
-};
-
-export default Header;
+}
