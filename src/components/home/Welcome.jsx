@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Welcome() {
   const [scrollY, setScrollY] = useState(0);
@@ -10,7 +10,7 @@ export default function Welcome() {
   }, []);
 
   return (
-    <div className="relative flex flex-col md:flex-row items-center justify-between h-screen bg-white">
+    <div className="relative flex flex-col md:flex-row items-center justify-between h-screen bg-white overflow-hidden">
       
       {/* Right Blue Div */}
       <div className="absolute top-0 right-0 h-full w-1/3 bg-blue-900 z-0"></div>
@@ -54,11 +54,11 @@ export default function Welcome() {
       </div>
 
       {/* Right Section */}
-      <div className="md:w-1/2 relative flex items-center justify-center md:justify-end z-20">
+      <div className="md:w-1/2 relative flex items-center justify-center z-20 px-8 md:pr-32">
         <img
           src="/assets/images/welcome.jpeg"
           alt="Person using laptop"
-          className="relative w-3/4 md:w-1/2 mt-20 mr-70 rounded-2xl transform scale-105"
+          className="relative w-3/4 md:w-2/3 mt-20 rounded-2xl transform scale-105"
         />
       </div>
     </div>

@@ -1,28 +1,89 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import "../../../styles/global.css";
 import { validateLogin } from "../../../validations/loginValidation";
+import { postFormData } from "../../../utils/api";
+import LoadingOverlay from "../../../components/Loading";
 
 export default function Login() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
 
   function handleChange(e) {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: "" });
+    }
+    if (apiError) {
+      setApiError("");
+    }
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
+    setApiError("");
 
+    // Validate form data
     const validationErrors = validateLogin(formData);
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length === 0) {
-      console.log("Login successful", formData);
+      setIsLoading(true);
+
+      try {
+        const formDataToSend = new FormData();
+        formDataToSend.append("email", formData.email.trim().toLowerCase());
+        formDataToSend.append("password", formData.password);
+
+        console.log("Sending login data:");
+        for (let [key, value] of formDataToSend.entries()) {
+          console.log(`${key}:`, key === "password" ? "***" : value);
+        }
+
+        const response = await postFormData("auth/login", formDataToSend);
+
+        console.log("Login successful:", response);
+
+        // Store token if provided
+        if (response.token) {
+          localStorage.setItem("authToken", response.token);
+        }
+
+        navigate("/courses");
+      } catch (error) {
+        console.error("Login error:", error);
+
+        let errorMessage = "Login failed. Please try again.";
+
+        if (error.response) {
+          if (error.response.errors) {
+            const errorMessages = Object.entries(error.response.errors)
+              .map(
+                ([, messages]) =>
+                  ` ${Array.isArray(messages) ? messages.join(", ") : messages}`
+              )
+              .join("\n");
+            errorMessage = errorMessages;
+          } else if (error.response.message) {
+            errorMessage = error.response.message;
+          }
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+
+        setApiError(errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
     } else {
       console.log("Validation failed", validationErrors);
     }
@@ -30,6 +91,8 @@ export default function Login() {
 
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col md:flex-row">
+      {isLoading && <LoadingOverlay />}
+
       {/* Left Side - Image */}
       <div
         className="hidden md:flex w-1/2 justify-center items-center relative overflow-hidden"
@@ -55,13 +118,13 @@ export default function Login() {
       <div className="w-full md:w-1/2 p-6 md:p-20 relative">
         {/* Logo */}
         <div className="absolute top-4 right-4">
-          <a
-            href="#"
+          <Link
+            to="/"
             className="text-2xl font-bold"
             style={{ color: "var(--Primary-1)" }}
           >
             LearnNova
-          </a>
+          </Link>
         </div>
 
         {/* Heading */}
@@ -78,6 +141,12 @@ export default function Login() {
           className="max-w-md mx-auto bg-white p-8 mt-10 shadow-md space-y-8 rounded-lg min-h-[320px]"
           noValidate
         >
+          {apiError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md whitespace-pre-line">
+              {apiError}
+            </div>
+          )}
+
           {/* Email */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium mb-2">
@@ -89,9 +158,10 @@ export default function Login() {
               name="email"
               value={formData.email}
               onChange={handleChange}
+              disabled={isLoading}
               placeholder="Enter your email"
               className="w-full px-4 py-3 border border-gray-300 rounded-md 
-                 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
             {errors.email && (
               <p className="text-red-500 text-sm mt-1">{errors.email}</p>
@@ -112,9 +182,10 @@ export default function Login() {
               name="password"
               value={formData.password}
               onChange={handleChange}
+              disabled={isLoading}
               placeholder="Enter your password"
               className="w-full px-4 py-3 border border-gray-300 rounded-md 
-                 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
             {errors.password && (
               <p className="text-red-500 text-sm mt-1">{errors.password}</p>
@@ -124,28 +195,31 @@ export default function Login() {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full text-white font-semibold py-3 px-4 mt-1 rounded-md transition duration-300"
+            disabled={isLoading}
+            className="w-full text-white font-semibold py-3 px-4 mt-1 rounded-md transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ backgroundColor: "var(--Primary-1)" }}
             onMouseOver={(e) =>
+              !isLoading &&
               (e.currentTarget.style.backgroundColor = "var(--Primary-2)")
             }
             onMouseOut={(e) =>
+              !isLoading &&
               (e.currentTarget.style.backgroundColor = "var(--Primary-1)")
             }
           >
-            Login
+            {isLoading ? "Logging In..." : "Login"}
           </button>
         </form>
 
         {/* Sign Up Link */}
         <p className="text-center text-sm mt-3">
-          Don’t have an account?{" "}
-          <a
-            href="#signup"
+          Don't have an account?{" "}
+          <Link
+            to="/signup"
             className="text-blue-600 hover:underline font-medium"
           >
             Sign Up
-          </a>
+          </Link>
         </p>
       </div>
     </div>

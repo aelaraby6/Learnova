@@ -1,33 +1,97 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import "../../../styles/global.css";
 import { validateSignup } from "../../../validations/signupValidation";
+import { postFormData } from "../../../utils/api";
+import LoadingOverlay from "../../../components/Loading";
 
 export default function Signup() {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     password: "",
     confirmPassword: "",
   });
 
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
 
   function handleChange(e) {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: "" });
+    }
+    if (apiError) {
+      setApiError("");
+    }
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
+    setApiError("");
 
+    // Validate form data
     const validationErrors = validateSignup(formData);
     setErrors(validationErrors);
 
-    console.log(formData.email);
-    console.log(validationErrors.email);
-
     if (Object.keys(validationErrors).length === 0) {
-      console.log("Form submitted successfully", formData);
+      setIsLoading(true);
+
+      try {
+        const formDataToSend = new FormData();
+        formDataToSend.append("name", formData.name.trim());
+        formDataToSend.append("email", formData.email.trim().toLowerCase());
+        formDataToSend.append("phone", formData.phone.trim());
+        formDataToSend.append("password", formData.password);
+        formDataToSend.append(
+          "password_confirmation",
+          formData.confirmPassword
+        );
+
+        console.log("Sending form data:");
+        for (let [key, value] of formDataToSend.entries()) {
+          console.log(`${key}:`, value);
+        }
+
+        // Send to API
+        const response = await postFormData("auth/register", formDataToSend);
+
+        console.log("Registration successful:", response);
+
+        navigate("/login", {
+          state: { message: "Account created successfully! Please login." },
+        });
+      } catch (error) {
+        console.error("Registration error:", error);
+
+        let errorMessage = "Registration failed. Please try again.";
+
+        if (error.response) {
+          if (error.response.errors) {
+            const errorMessages = Object.entries(error.response.errors)
+              .map(
+                ([, messages]) =>
+                  `${Array.isArray(messages) ? messages.join(", ") : messages}`
+              )
+              .join("\n");
+            errorMessage = errorMessages;
+          } else if (error.response.message) {
+            errorMessage = error.response.message;
+          }
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+
+        setApiError(errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
     } else {
       console.log("Validation failed", validationErrors);
     }
@@ -35,16 +99,18 @@ export default function Signup() {
 
   return (
     <div className="bg-gray-50">
+      {isLoading && <LoadingOverlay />}
+
       <div className="flex flex-col md:flex-row min-h-screen">
         <div id="user-info" className="w-full md:w-1/2 p-6 md:p-20 relative">
           <div className="absolute top-4 left-4">
-            <a
-              href="#"
+            <Link
+              to="/"
               className="learnnova-logo text-2xl font-bold"
               style={{ color: "var(--Primary-1)" }}
             >
               LearnNova
-            </a>
+            </Link>
           </div>
 
           <h1 className="text-4xl md:text-5xl font-bold text-center mb-4">
@@ -61,6 +127,12 @@ export default function Signup() {
             onSubmit={handleSubmit}
             noValidate
           >
+            {apiError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md whitespace-pre-line">
+                {apiError}
+              </div>
+            )}
+
             <div>
               <label htmlFor="name" className="block text-sm font-medium mb-1">
                 Name
@@ -72,10 +144,11 @@ export default function Signup() {
                 name="name"
                 placeholder="Enter your name"
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isLoading}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
               {errors.name && (
-                <p className="text-red-500 text-sm">{errors.name}</p>
+                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
               )}
             </div>
 
@@ -89,11 +162,31 @@ export default function Signup() {
                 id="email"
                 name="email"
                 onChange={handleChange}
+                disabled={isLoading}
                 placeholder="Enter your email"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
               {errors.email && (
-                <p className="text-red-500 text-sm">{errors.email}</p>
+                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium mb-1">
+                Phone Number
+              </label>
+              <input
+                value={formData.phone}
+                type="tel"
+                id="phone"
+                name="phone"
+                onChange={handleChange}
+                disabled={isLoading}
+                placeholder="01xxxxxxxxx"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              />
+              {errors.phone && (
+                <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
               )}
             </div>
 
@@ -111,10 +204,11 @@ export default function Signup() {
                 name="password"
                 placeholder="Enter your password"
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isLoading}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
               {errors.password && (
-                <p className="text-red-500 text-sm">{errors.password}</p>
+                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
               )}
             </div>
 
@@ -132,36 +226,42 @@ export default function Signup() {
                 name="confirmPassword"
                 placeholder="Confirm your password"
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isLoading}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
               {errors.confirmPassword && (
-                <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.confirmPassword}
+                </p>
               )}
             </div>
 
             <button
               type="submit"
-              className="w-full text-white font-semibold py-2 px-4 rounded-md transition duration-300"
+              disabled={isLoading}
+              className="w-full text-white font-semibold py-2 px-4 rounded-md transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: "var(--Primary-1)" }}
               onMouseOver={(e) =>
+                !isLoading &&
                 (e.currentTarget.style.backgroundColor = "var(--Primary-2)")
               }
               onMouseOut={(e) =>
+                !isLoading &&
                 (e.currentTarget.style.backgroundColor = "var(--Primary-1)")
               }
             >
-              Create Account
+              {isLoading ? "Creating Account..." : "Create Account"}
             </button>
           </form>
 
           <p className="text-center text-sm mt-3">
             Already have an account?{" "}
-            <a
-              href="#login"
+            <Link
+              to="/login"
               className="text-blue-600 hover:underline font-medium"
             >
               Login
-            </a>
+            </Link>
           </p>
         </div>
 
