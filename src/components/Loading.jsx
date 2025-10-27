@@ -15,7 +15,7 @@ function LoadingOverlay() {
         {/* Loading Text */}
         <div className="text-center">
           <h3 className="text-xl font-semibold text-gray-800 mb-1">
-            Creating Your Account
+            Loading
           </h3>
           <p className="text-sm text-gray-500">Please wait a moment...</p>
         </div>

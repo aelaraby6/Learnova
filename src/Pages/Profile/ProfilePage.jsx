@@ -1,24 +1,188 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "../../components/Header";
+import LoadingOverlay from "../../components/Loading";
+import { get, put, postFormData } from "../../utils/api";
+import { AlertCircle, CheckCircle, XCircle } from "lucide-react";
 
 export default function ProfilePage() {
   const [form, setForm] = useState({
-    Name: "",
-    Email: "",
-    Phone: "",
-    Password: "",
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
     newPassword: "",
   });
 
   const [activeTab, setActiveTab] = useState("Profile");
   const [preview, setPreview] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
-  const handleUpload = () => {
-    console.log("Uploading photo...");
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = localStorage.getItem("authToken");
+
+      if (!token) {
+        setApiError("Please login to view your profile");
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const response = await get("profile", token);
+
+        // Handle nested user object in response
+        const userData = response.user || response;
+
+        setForm({
+          name: userData.name || "",
+          email: userData.email || "",
+          phone: userData.phone || "",
+          password: "",
+          newPassword: "",
+        });
+
+        // Handle img or photo field
+        if (userData.img || userData.photo) {
+          setPreview(userData.img || userData.photo);
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        setApiError(error.response?.message || "Failed to load profile data");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      setApiError("Please select a photo first");
+      return;
+    }
+
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      setApiError("Please login first");
+      return;
+    }
+
+    setIsLoading(true);
+    setApiError("");
+    setSuccessMessage("");
+
+    try {
+      const formData = new FormData();
+      formData.append("img", selectedFile);
+      formData.append("_method", "PUT");
+
+      const response = await postFormData("user/avatar", formData, token);
+
+      setSuccessMessage("Photo uploaded successfully!", response);
+
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (error) {
+      console.error("Photo upload error:", error);
+      setApiError(error.response?.message || "Failed to upload photo");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+    if (fieldErrors[name]) {
+      setFieldErrors({ ...fieldErrors, [name]: "" });
+    }
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    if (!form.name.trim()) errors.name = "Name is required";
+    if (!form.email.trim()) {
+      errors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      errors.email = "Please enter a valid email address";
+    }
+    if (!form.phone.trim()) errors.phone = "Phone is required";
+
+    if (form.newPassword && !form.password) {
+      errors.password = "Current password is required to set new password";
+    }
+    if (form.newPassword && form.newPassword.length < 6) {
+      errors.newPassword = "New password must be at least 6 characters";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setApiError("");
+    setSuccessMessage("");
+
+    if (!validateForm()) return;
+
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      setApiError("Please login first");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const updateData = {
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+      };
+
+      if (form.password && form.newPassword) {
+        updateData.password = form.password;
+        updateData.newPassword = form.newPassword;
+      }
+
+      const response = await put("profile", updateData, token);
+
+      console.log("Profile update successful:", response);
+      setSuccessMessage("Profile updated successfully!");
+
+      setForm({ ...form, password: "", newPassword: "" });
+
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (error) {
+      console.error("Profile update error:", error);
+
+      let errorMessage = "Failed to update profile";
+
+      if (error.response?.errors) {
+        const backendErrors = {};
+        Object.entries(error.response.errors).forEach(([field, messages]) => {
+          backendErrors[field] = Array.isArray(messages)
+            ? messages.join(", ")
+            : messages;
+        });
+        setFieldErrors(backendErrors);
+        errorMessage = "Please check the form for errors";
+      } else if (error.response?.message) {
+        errorMessage = error.response.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      setApiError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const navItems = [{ name: "Profile" }, { name: "Photo" }];
@@ -26,14 +190,25 @@ export default function ProfilePage() {
   return (
     <>
       <Header />
+      {isLoading && <LoadingOverlay />}
+
       <div className="flex min-h-screen bg-gray-50 mt-17">
-        {/* Sidebar */}
         <aside className="w-64 bg-white border-r p-6 flex flex-col items-center">
-          <div className="w-24 h-24 rounded-full bg-black text-white flex items-center justify-center text-2xl font-bold">
-            AE
+          <div className="w-24 h-24 rounded-full bg-black text-white flex items-center justify-center text-2xl font-bold overflow-hidden">
+            {preview ? (
+              <img
+                src={preview}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            ) : form.name ? (
+              form.name.charAt(0).toUpperCase()
+            ) : (
+              "U"
+            )}
           </div>
           <h2 className="mt-4 font-semibold text-center">
-            Abdelrahman Elaraby
+            {form.name || "User Name"}
           </h2>
 
           <nav className="mt-6 w-full">
@@ -53,9 +228,44 @@ export default function ProfilePage() {
           </nav>
         </aside>
 
-        {/* Main content */}
         <main className="flex-1 p-10 flex justify-between items-start">
           <div className="w-full max-w-2xl">
+            {successMessage && (
+              <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-lg flex items-start space-x-3">
+                <CheckCircle
+                  className="text-green-500 flex-shrink-0 mt-0.5"
+                  size={20}
+                />
+                <div className="flex-1">
+                  <p className="text-green-700 text-sm">{successMessage}</p>
+                </div>
+                <button
+                  onClick={() => setSuccessMessage("")}
+                  className="text-green-500 hover:text-green-700"
+                >
+                  <XCircle size={20} />
+                </button>
+              </div>
+            )}
+
+            {apiError && (
+              <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg flex items-start space-x-3">
+                <AlertCircle
+                  className="text-red-500 flex-shrink-0 mt-0.5"
+                  size={20}
+                />
+                <div className="flex-1">
+                  <p className="text-red-700 text-sm">{apiError}</p>
+                </div>
+                <button
+                  onClick={() => setApiError("")}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  <XCircle size={20} />
+                </button>
+              </div>
+            )}
+
             {activeTab === "Profile" && (
               <>
                 <h1 className="text-2xl font-bold">Public profile</h1>
@@ -63,61 +273,115 @@ export default function ProfilePage() {
                   Add information about yourself
                 </p>
 
-                <form className="space-y-6 max-w-xl">
+                <div className="space-y-6 max-w-xl">
                   <div>
                     <h3 className="font-semibold mb-2">Basics:</h3>
                     <div className="flex flex-col gap-4 max-w-md">
-                      <input
-                        type="text"
-                        name="Name"
-                        value={form.Name}
-                        onChange={handleChange}
-                        placeholder="Name"
-                        className="border rounded p-2 w-full focus:outline-none focus:border-[var(--Primary-1)] transition-colors duration-300"
-                      />
-                      <input
-                        type="text"
-                        name="Email"
-                        value={form.Email}
-                        onChange={handleChange}
-                        placeholder="Email"
-                        className="border rounded p-2 w-full focus:outline-none focus:border-[var(--Primary-1)] transition-colors duration-300"
-                      />
-                      <input
-                        type="text"
-                        name="Phone"
-                        value={form.Phone}
-                        onChange={handleChange}
-                        placeholder="Phone"
-                        className="border rounded p-2 w-full focus:outline-none focus:border-[var(--Primary-1)] transition-colors duration-300"
-                      />
+                      <div>
+                        <input
+                          type="text"
+                          name="name"
+                          value={form.name}
+                          onChange={handleChange}
+                          placeholder="Name"
+                          className={`border rounded p-2 w-full focus:outline-none focus:border-[var(--Primary-1)] transition-colors duration-300 ${
+                            fieldErrors.name ? "border-red-500" : ""
+                          }`}
+                        />
+                        {fieldErrors.name && (
+                          <p className="mt-1 text-sm text-red-600 flex items-center space-x-1">
+                            <AlertCircle size={14} />
+                            <span>{fieldErrors.name}</span>
+                          </p>
+                        )}
+                      </div>
 
-                      <input
-                        type="text"
-                        name="Password"
-                        value={form.Password}
-                        onChange={handleChange}
-                        placeholder="Password"
-                        className="border rounded p-2 w-full focus:outline-none focus:border-[var(--Primary-1)] transition-colors duration-300"
-                      />
-                      <input
-                        type="text"
-                        name="newPassword"
-                        value={form.newPassword}
-                        onChange={handleChange}
-                        placeholder="New Password"
-                        className="border rounded p-2 w-full focus:outline-none focus:border-[var(--Primary-1)] transition-colors duration-300"
-                      />
+                      <div>
+                        <input
+                          type="email"
+                          name="email"
+                          value={form.email}
+                          onChange={handleChange}
+                          placeholder="Email"
+                          className={`border rounded p-2 w-full focus:outline-none focus:border-[var(--Primary-1)] transition-colors duration-300 ${
+                            fieldErrors.email ? "border-red-500" : ""
+                          }`}
+                        />
+                        {fieldErrors.email && (
+                          <p className="mt-1 text-sm text-red-600 flex items-center space-x-1">
+                            <AlertCircle size={14} />
+                            <span>{fieldErrors.email}</span>
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <input
+                          type="tel"
+                          name="phone"
+                          value={form.phone}
+                          onChange={handleChange}
+                          placeholder="Phone"
+                          className={`border rounded p-2 w-full focus:outline-none focus:border-[var(--Primary-1)] transition-colors duration-300 ${
+                            fieldErrors.phone ? "border-red-500" : ""
+                          }`}
+                        />
+                        {fieldErrors.phone && (
+                          <p className="mt-1 text-sm text-red-600 flex items-center space-x-1">
+                            <AlertCircle size={14} />
+                            <span>{fieldErrors.phone}</span>
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <input
+                          type="password"
+                          name="password"
+                          value={form.password}
+                          onChange={handleChange}
+                          placeholder="Current Password (leave empty to keep current)"
+                          className={`border rounded p-2 w-full focus:outline-none focus:border-[var(--Primary-1)] transition-colors duration-300 ${
+                            fieldErrors.password ? "border-red-500" : ""
+                          }`}
+                        />
+                        {fieldErrors.password && (
+                          <p className="mt-1 text-sm text-red-600 flex items-center space-x-1">
+                            <AlertCircle size={14} />
+                            <span>{fieldErrors.password}</span>
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <input
+                          type="password"
+                          name="newPassword"
+                          value={form.newPassword}
+                          onChange={handleChange}
+                          placeholder="New Password (leave empty to keep current)"
+                          className={`border rounded p-2 w-full focus:outline-none focus:border-[var(--Primary-1)] transition-colors duration-300 ${
+                            fieldErrors.newPassword ? "border-red-500" : ""
+                          }`}
+                        />
+                        {fieldErrors.newPassword && (
+                          <p className="mt-1 text-sm text-red-600 flex items-center space-x-1">
+                            <AlertCircle size={14} />
+                            <span>{fieldErrors.newPassword}</span>
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
 
                   <button
-                    type="submit"
-                    className="bg-[var(--Primary-1)] text-white px-4 py-2 rounded hover:bg-[var(--Primary-2)]"
+                    onClick={handleSubmit}
+                    disabled={isLoading}
+                    className="bg-[var(--Primary-1)] text-white px-4 py-2 rounded hover:bg-[var(--Primary-2)] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Save
+                    {isLoading ? "Saving..." : "Save"}
                   </button>
-                </form>
+                </div>
               </>
             )}
 
@@ -152,6 +416,7 @@ export default function ProfilePage() {
                           onChange={(e) => {
                             const file = e.target.files[0];
                             if (file) {
+                              setSelectedFile(file);
                               setPreview(URL.createObjectURL(file));
                             }
                           }}
@@ -159,10 +424,11 @@ export default function ProfilePage() {
                       </label>
 
                       <button
-                        className="bg-[var(--Primary-1)] text-white px-3 py-1.5 text-sm rounded hover:bg-[var(--Primary-2)]"
+                        className="bg-[var(--Primary-1)] text-white px-3 py-1.5 text-sm rounded hover:bg-[var(--Primary-2)] disabled:opacity-50"
                         onClick={handleUpload}
+                        disabled={isLoading}
                       >
-                        Upload
+                        {isLoading ? "Uploading..." : "Upload"}
                       </button>
                     </div>
                   </div>
@@ -171,7 +437,6 @@ export default function ProfilePage() {
             )}
           </div>
 
-          {/* Img */}
           <div className="w-full flex justify-center mt-10">
             <div className="relative w-[25rem] h-[25rem] rounded-full bg-[var(--Primary-1)] flex items-center justify-center shadow-2xl drop-shadow-2xl">
               <img
@@ -179,9 +444,7 @@ export default function ProfilePage() {
                 alt="Decoration"
                 className="w-72 h-72 rounded-full object-cover shadow-2xl"
               />
-
               <div className="absolute top-1 right-3 w-16 h-16 rounded-full bg-[var(--Secondary-2)] shadow-lg"></div>
-
               <div className="absolute bottom-1 left-3 w-16 h-16 rounded-full bg-[var(--Secondary-2)] shadow-lg"></div>
             </div>
           </div>
