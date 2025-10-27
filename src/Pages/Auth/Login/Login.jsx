@@ -56,9 +56,11 @@ export default function Login() {
         // Store token if provided
         if (response.token) {
           localStorage.setItem("authToken", response.token);
+          localStorage.setItem("isLoggedIn", "true");
+          localStorage.setItem("userName", response.user?.name || "User");
         }
 
-        navigate("/courses");
+        navigate("/profile");
       } catch (error) {
         console.error("Login error:", error);
 

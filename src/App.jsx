@@ -11,6 +11,8 @@ import Error404 from "./Pages/Errors/Error404";
 import Home from "./Pages/Home/Home";
 import ProfilePage from "./Pages/Profile/ProfilePage";
 import Courses from "./Pages/Courses/Courses";
+import Teachers from "./Pages/Teachers/Teachers";
+import ContactPage from "./Pages/Contact/Contact";
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
         <Route path="/courses" element={<Courses />} />
 
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/teachers" element={<Teachers />} />
+        <Route path="/contact" element={<ContactPage />} />
 
         {/* 404 */}
         <Route path="*" element={<Error404 />} />
