@@ -8,7 +8,7 @@ export default function CourseCard({
   instructorImage,
 }) {
   return (
-    <div className="group w-full rounded-2xl shadow-md hover:shadow-xl overflow-hidden bg-white transition-all duration-300 hover:-translate-y-1">
+    <div className="group w-full h-full rounded-2xl shadow-md hover:shadow-xl overflow-hidden bg-white transition-all duration-300 hover:-translate-y-1 flex flex-col">
       {/* Image Section with Overlay Effect */}
       <div className="relative overflow-hidden h-48 sm:h-52 md:h-56 lg:h-60">
         <img
@@ -36,11 +36,11 @@ export default function CourseCard({
       </div>
 
       {/* Content Section */}
-      <div className="p-4 sm:p-5 md:p-6">
+      <div className="p-4 sm:p-5 md:p-6 flex-1 flex flex-col">
         <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-200 line-clamp-1">
           {title}
         </h3>
-        <p className="text-gray-600 text-sm sm:text-base leading-relaxed line-clamp-2 mb-3 sm:mb-4">
+        <p className="text-gray-600 text-sm sm:text-base leading-relaxed line-clamp-2 mb-3 sm:mb-4 flex-1">
           {description}
         </p>
 

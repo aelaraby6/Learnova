@@ -13,12 +13,13 @@ import ProfilePage from "./Pages/Profile/ProfilePage";
 import Courses from "./Pages/Courses/Courses";
 import Teachers from "./Pages/Teachers/Teachers";
 import ContactPage from "./Pages/Contact/Contact";
+import Dashboard from "./Pages/Admin/Admin";
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Redirect root to login */}
+
         <Route path="/" element={<Home />} />
 
         {/* Auth routes */}
@@ -27,10 +28,13 @@ function App() {
 
         {/* Main app routes */}
         <Route path="/courses" element={<Courses />} />
-
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/teachers" element={<Teachers />} />
         <Route path="/contact" element={<ContactPage />} />
+
+        {/* Admin routes */}
+
+        <Route path="/admin" element={<Dashboard/>} />
 
         {/* 404 */}
         <Route path="*" element={<Error404 />} />

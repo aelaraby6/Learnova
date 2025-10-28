@@ -60,7 +60,7 @@ export default function Header() {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-8">
           <Link
-            to="/home"
+            to="/"
             className="text-base font-medium text-gray-700 hover:text-blue-600 transition-all duration-300 relative group"
           >
             Home

@@ -140,18 +140,20 @@ export default function ProfilePage() {
     setIsLoading(true);
 
     try {
-      const updateData = {
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
-      };
+      const formData = new FormData();
+
+      formData.append("_method", "PUT");
+
+      formData.append("name", form.name);
+      formData.append("email", form.email);
+      formData.append("phone", form.phone);
 
       if (form.password && form.newPassword) {
-        updateData.password = form.password;
-        updateData.newPassword = form.newPassword;
+        formData.append("password", form.password);
+        formData.append("newPassword", form.newPassword);
       }
 
-      const response = await put("profile", updateData, token);
+      const response = await put("user/profile", formData, token);
 
       console.log("Profile update successful:", response);
       setSuccessMessage("Profile updated successfully!");
