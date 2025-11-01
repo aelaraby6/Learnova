@@ -14,6 +14,8 @@ import Courses from "./Pages/Courses/Courses";
 import Teachers from "./Pages/Teachers/Teachers";
 import InstructorProfile from "./Pages/Teachers/InstructorProfile";
 import ContactPage from "./Pages/Contact/Contact";
+import CourseDetailPage from "./Pages/Course/Course";
+import Admin from "./Pages/Admin/Admin";
 
 function App() {
   return (
@@ -21,6 +23,7 @@ function App() {
       <Routes>
         {/* Redirect root to login */}
         <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
 
         {/* Auth routes */}
         <Route path="/login" element={<Login />} />
@@ -36,6 +39,10 @@ function App() {
           element={<InstructorProfile />}
         />
         <Route path="/contact" element={<ContactPage />} />
+
+        <Route path="/course" element={<CourseDetailPage />} />
+
+        <Route path="/admin" element={<Admin /> } />
 
         {/* 404 */}
         <Route path="*" element={<Error404 />} />
