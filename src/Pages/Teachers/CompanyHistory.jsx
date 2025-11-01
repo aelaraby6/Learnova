@@ -31,22 +31,52 @@ const CompanyHistory = () => {
   ];
 
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      const timelineItems = document.querySelectorAll(".timeline-item");
-      const scrollPosition = window.scrollY + window.innerHeight / 2;
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const timelineItems = document.querySelectorAll(".timeline-item");
+          const viewportHeight = window.innerHeight;
 
-      timelineItems.forEach((item, index) => {
-        const itemTop = item.offsetTop;
-        const itemBottom = itemTop + item.offsetHeight;
+          if (timelineItems.length === 0) {
+            ticking = false;
+            return;
+          }
 
-        if (scrollPosition >= itemTop && scrollPosition <= itemBottom) {
-          setActiveItem(index);
-        }
-      });
+          // Find which item is closest to the center of the viewport
+          let closestIndex = 0;
+          let closestDistance = Infinity;
+
+          timelineItems.forEach((item, index) => {
+            const itemRect = item.getBoundingClientRect();
+            const itemCenter = itemRect.top + itemRect.height / 2;
+            const viewportCenter = viewportHeight / 2;
+            const distance = Math.abs(itemCenter - viewportCenter);
+
+            if (distance < closestDistance) {
+              closestDistance = distance;
+              closestIndex = index;
+            }
+          });
+
+          setActiveItem(closestIndex);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    // Initial call to set the active item
+    setTimeout(handleScroll, 100);
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
   }, []);
 
   return (
@@ -80,8 +110,10 @@ const CompanyHistory = () => {
                 {timelineData.map((item, index) => (
                   <div
                     key={index}
-                    className={`timeline-item relative pl-12 transition-all duration-300 ${
-                      activeItem === index ? "opacity-100" : "opacity-70"
+                    className={`timeline-item relative pl-12 transition-all duration-500 ${
+                      activeItem === index
+                        ? "opacity-100 scale-105"
+                        : "opacity-20 scale-95"
                     }`}
                   >
                     {/* Timeline dot */}
