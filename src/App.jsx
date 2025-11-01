@@ -12,6 +12,7 @@ import Home from "./Pages/Home/Home";
 import ProfilePage from "./Pages/Profile/ProfilePage";
 import Courses from "./Pages/Courses/Courses";
 import Teachers from "./Pages/Teachers/Teachers";
+import InstructorProfile from "./Pages/Teachers/InstructorProfile";
 import ContactPage from "./Pages/Contact/Contact";
 
 function App() {
@@ -30,6 +31,10 @@ function App() {
 
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/teachers" element={<Teachers />} />
+        <Route
+          path="/instructor/:instructorId"
+          element={<InstructorProfile />}
+        />
         <Route path="/contact" element={<ContactPage />} />
 
         {/* 404 */}

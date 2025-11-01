@@ -1,4 +1,4 @@
-import "../styles/global.css";
+import "../../styles/global.css";
 
 const WorkValues = () => {
   const valuesData = [
@@ -85,8 +85,13 @@ const WorkValues = () => {
       </div>
 
       {/* Arrow positioned at bottom of section */}
-      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2">
-        <img src="assets/arrow.svg" alt="" />
+      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 z-10">
+        <div>
+          <img
+            src="/assets/arrow.svg"
+            alt="Arrow"
+          />
+        </div>
       </div>
     </section>
   );

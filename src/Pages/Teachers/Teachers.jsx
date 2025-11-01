@@ -1,32 +1,87 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { teachersData } from "../../data/teachersData";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import LoadingOverlay from "../../components/Loading";
+import { get } from "../../utils/api";
+
+import AboutMissionSection from "./AboutMissionSection";
+import CompanyHistory from "./CompanyHistory";
+import MissionSection from "./MissionSection";
+import StatsSection from "./StatsSection";
+import WorkValues from "./WorkValues";
 
 const Teachers = () => {
+  const [teachers, setTeachers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        const res = await get("admin/instructors", token);
+        if (res.status && res.instructors) {
+          setTeachers(res.instructors);
+        } else {
+          throw new Error("Invalid response");
+        }
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load instructors");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTeachers();
+  }, []);
+
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <LoadingOverlay />
+        <Footer />
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <Header />
+        <div className="flex justify-center items-center min-h-screen">
+          <p className="text-lg text-red-500">{error}</p>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
   return (
     <>
       <Header />
+      <MissionSection />
+      <StatsSection />
+      <AboutMissionSection />
+      <WorkValues />
+      <CompanyHistory />
       <section className="py-16 sm:py-20 lg:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Main container using flex column */}
           <div className="flex flex-col items-center justify-center">
-            {/* First item - Header section */}
+            {/* Header Section */}
             <div className="w-full mb-12 lg:mb-16">
-              {/* Header with title and button using flex space-between */}
               <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-6">
-                {/* Left side - Title and description */}
                 <div className="flex-1">
                   <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-900 mb-4">
-                    Our teachers
+                    Our Teachers
                   </h1>
                   <p className="text-base sm:text-lg text-gray-600 max-w-2xl">
                     Presenting Academy, the tech school of the future. We teach
                     you the right skills to be prepared for tomorrow.
                   </p>
                 </div>
-
-                {/* Right side - Button */}
                 <div className="flex-shrink-0">
                   <button className="bg-blue-600 text-white px-6 py-3 sm:px-8 sm:py-4 rounded-full text-base sm:text-lg font-semibold hover:bg-blue-700 transition-colors">
                     BECOME A TEACHER
@@ -35,39 +90,48 @@ const Teachers = () => {
               </div>
             </div>
 
-            {/* Second item - Teachers grid */}
+            {/* Teachers Grid */}
             <div className="w-full">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-                {teachersData.map((teacher) => (
-                  <Link
+                {teachers.map((teacher) => (
+                  <div
                     key={teacher.id}
-                    to={`/instructor/${teacher.id}`}
-                    className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 block"
+                    className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
                   >
-                    {/* Teacher image */}
-                    <div className="w-full h-[348px] overflow-hidden">
+                    {/* Teacher Image - Clickable area */}
+                    <Link
+                      to={`/instructor/${teacher.id}`}
+                      className="block w-full h-[348px] overflow-hidden"
+                    >
                       <img
-                        src={teacher.image}
+                        src={teacher.img}
                         alt={teacher.name}
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                       />
-                    </div>
+                    </Link>
 
-                    {/* Teacher info */}
+                    {/* Teacher Info */}
                     <div className="p-6">
-                      <h3 className="text-xl lg:text-2xl font-bold text-blue-900 mb-3">
-                        {teacher.name}
-                      </h3>
-                      <p className="text-gray-600 text-sm lg:text-base leading-relaxed mb-4">
-                        {teacher.description}
-                      </p>
+                      <Link
+                        to={`/instructor/${teacher.id}`}
+                        className="block mb-4"
+                      >
+                        <h3 className="text-xl lg:text-2xl font-bold text-blue-900 mb-3 hover:text-blue-700 transition-colors">
+                          {teacher.name}
+                        </h3>
+                        <p className="text-gray-600 text-sm lg:text-base leading-relaxed">
+                          {teacher.bio}
+                        </p>
+                      </Link>
 
-                      {/* Social links */}
+                      {/* Social Links */}
                       <div className="flex space-x-3">
                         <a
-                          href={teacher.socialLinks.linkedin}
+                          href={teacher.linkedin}
                           className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center hover:bg-blue-200 transition-colors"
                           aria-label="LinkedIn"
+                          target="_blank"
+                          rel="noopener noreferrer"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -78,10 +142,13 @@ const Teachers = () => {
                             <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.761 0 5-2.239 5-5v-14c0-2.761-2.239-5-5-5zm-11 19h-3v-10h3v10zm-1.5-11.268c-.966 0-1.75-.784-1.75-1.75s.784-1.75 1.75-1.75 1.75.784 1.75 1.75-.784 1.75-1.75 1.75zm13.5 11.268h-3v-5.604c0-1.337-.026-3.063-1.868-3.063-1.868 0-2.156 1.459-2.156 2.967v5.7h-3v-10h2.881v1.367h.041c.401-.761 1.379-1.563 2.838-1.563 3.036 0 3.6 2.001 3.6 4.601v5.595z" />
                           </svg>
                         </a>
+
                         <a
-                          href={teacher.socialLinks.twitter}
+                          href={teacher.twitter}
                           className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center hover:bg-blue-200 transition-colors"
                           aria-label="Twitter"
+                          target="_blank"
+                          rel="noopener noreferrer"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -98,34 +165,16 @@ const Teachers = () => {
                             />
                           </svg>
                         </a>
-                        <a
-                          href={teacher.socialLinks.facebook}
-                          className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center hover:bg-blue-200 transition-colors"
-                          aria-label="Instagram"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="w-5 h-5 text-blue-600"
-                          >
-                            <rect x="2" y="2" width="20" height="20" rx="5" />
-                            <circle cx="12" cy="12" r="4" />
-                            <circle cx="18" cy="6" r="1" />
-                          </svg>
-                        </a>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 ))}
               </div>
             </div>
           </div>
         </div>
       </section>
-      <Footer/>
+      <Footer />
     </>
   );
 };
