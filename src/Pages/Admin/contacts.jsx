@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Mail, Plus } from "lucide-react";
+import { Mail } from "lucide-react";
 import { get } from "../../utils/api";
 
 const ContactsSection = () => {
@@ -16,12 +16,9 @@ const ContactsSection = () => {
       setLoading(true);
       setError(null);
 
-      //   const token = localStorage.getItem("token");
+      const token = localStorage.getItem("authToken");
 
-      const response = await get(
-        "contacts",
-        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbGVhcm5vdmEtYXBpLXByb2R1Y3Rpb24udXAucmFpbHdheS5hcHAvYXBpL3YxL2F1dGgvbG9naW4iLCJpYXQiOjE3NjIwMjI2MTcsImV4cCI6MTc2MjAyNjIxNywibmJmIjoxNzYyMDIyNjE3LCJqdGkiOiJab1Bub25mdEJWWXlTcEVSIiwic3ViIjoiMiIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.5pJWTx6eIdWqETG2K17bOABNtU5V2xI3__lnBIsSogs"
-      );
+      const response = await get("admin/contacts", token);
 
       if (response.status && response.contacts) {
         setContacts(response.contacts);
@@ -66,28 +63,19 @@ const ContactsSection = () => {
           background: "linear-gradient(135deg, #e1edfb 0%, #ffffff 100%)",
         }}
       >
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div
-              className="p-2 rounded-xl"
-              style={{ backgroundColor: "#0f437f" }}
-            >
-              <Mail className="text-white" size={24} />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">Contacts</h2>
-              <p className="text-sm text-gray-600">
-                {contacts.length} total contacts
-              </p>
-            </div>
-          </div>
-          <button
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium transition-all hover:opacity-90 shadow-md"
+        <div className="flex items-center gap-3">
+          <div
+            className="p-2 rounded-xl"
             style={{ backgroundColor: "#0f437f" }}
           >
-            <Plus size={20} />
-            Add Contact
-          </button>
+            <Mail className="text-white" size={24} />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Contacts</h2>
+            <p className="text-sm text-gray-600">
+              {contacts.length} total contacts
+            </p>
+          </div>
         </div>
       </div>
 

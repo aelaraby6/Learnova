@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Users, Mail, Menu, X } from "lucide-react";
+import { Users, Mail, Menu, X, FolderOpen } from "lucide-react";
 import UsersSection from "./users";
 import ContactsSection from "./contacts";
+import CategoriesSection from "./categories";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("users");
@@ -10,6 +11,7 @@ export default function AdminDashboard() {
   const menuItems = [
     { id: "users", label: "Users", icon: Users },
     { id: "contacts", label: "Contacts", icon: Mail },
+    { id: "categories", label: "Categories", icon: FolderOpen },
   ];
 
   const renderContent = () => {
@@ -18,8 +20,23 @@ export default function AdminDashboard() {
         return <UsersSection />;
       case "contacts":
         return <ContactsSection />;
+      case "categories":
+        return <CategoriesSection />;
       default:
         return null;
+    }
+  };
+
+  const getPageDescription = () => {
+    switch (activeTab) {
+      case "users":
+        return "Manage your users";
+      case "contacts":
+        return "Manage contact submissions";
+      case "categories":
+        return "Manage course categories";
+      default:
+        return "";
     }
   };
 
@@ -114,11 +131,7 @@ export default function AdminDashboard() {
               {menuItems.find((item) => item.id === activeTab)?.label ||
                 "Admin Dashboard"}
             </h1>
-            <p className="text-gray-600">
-              {activeTab === "users"
-                ? "Manage your users"
-                : "Manage contact submissions"}
-            </p>
+            <p className="text-gray-600">{getPageDescription()}</p>
           </div>
 
           {/* Content */}
