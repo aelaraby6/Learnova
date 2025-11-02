@@ -40,7 +40,7 @@ function App() {
         />
         <Route path="/contact" element={<ContactPage />} />
 
-        <Route path="/course" element={<CourseDetailPage />} />
+        <Route path="/course/:courseId" element={<CourseDetailPage />} />
 
         <Route path="/admin" element={<Admin /> } />
 

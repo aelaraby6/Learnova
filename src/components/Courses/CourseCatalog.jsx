@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import CourseCard from "../course";
 import { get } from "../../utils/api";
 import { useEffect } from "react";
 
 export default function CourseCatalog() {
+  const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -18,7 +20,7 @@ export default function CourseCatalog() {
     try {
       setLoading(true);
       setError(null);
-      const data = await get("allCourses");
+      const data = await get("courses/allCourses");
 
       if (data && data.courses) {
         setCourses(data.courses);
@@ -42,6 +44,10 @@ export default function CourseCatalog() {
     selectedCategory === "All"
       ? courses
       : courses.filter((course) => course.category.name === selectedCategory);
+
+  const handleCourseClick = (courseId) => {
+    navigate(`/course/${courseId}`);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-6 md:px-8 md:py-8 mb-0">
@@ -101,7 +107,21 @@ export default function CourseCatalog() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
               {filteredCourses.map((course) => (
-                <CourseCard key={course.id} course={course} />
+                <div
+                  key={course.id}
+                  onClick={() => handleCourseClick(course.id)}
+                  className="cursor-pointer transition-transform hover:scale-[1.02]"
+                >
+                  <CourseCard
+                    image={course.img}
+                    duration={course.duration}
+                    price={course.price}
+                    title={course.title}
+                    description={course.description}
+                    instructorName={course.instructor?.name}
+                    instructorImage={course.instructor?.img}
+                  />
+                </div>
               ))}
             </div>
 

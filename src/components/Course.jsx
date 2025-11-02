@@ -1,4 +1,4 @@
-export default function CourseCard({
+export default  function CourseCard({
   image,
   duration,
   price,

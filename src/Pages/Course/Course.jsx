@@ -1,35 +1,42 @@
-import { useState, useEffect } from 'react';
-import { Star, Clock, Users, Globe, Award, PlayCircle, FileText, Download, CheckCircle } from 'lucide-react';
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import {
+  Star,
+  Clock,
+  Users,
+  Globe,
+  Award,
+  PlayCircle,
+  FileText,
+  Download,
+  CheckCircle,
+} from "lucide-react";
+import { get } from "../../utils/api";
 
-const fetchCourseDetails = async () => {
-  // This should be replaced with: const data = await get(`courses/${courseId}`);
-  // For now, returning mock data based on your API structure
+// Fetch course details from API
+const fetchCourseDetails = async (courseId) => {
+  const response = await get(`courses/showCourse/${courseId}`);
+
+  if (!response.status) {
+    throw new Error(response.message || "Failed to fetch course");
+  }
+
+  const apiCourse = response.course;
+
+  // Transform API response to match component structure
   return {
-    id: 1,
-    title: "Laravel 12 Complete Course",
-    description: "Routing-Middleware-FormRequest-Controller",
-    price: "350.00",
-    img: "https://res.cloudinary.com/dcwnirwfq/image/upload/v1761982249/courses/me85xa174p9t9n8izlar.jpg",
-    category: {
-      id: 1,
-      name: "Backend",
-      description: "All You need to know in backend",
-    },
-    instructor: {
-      id: 1,
-      name: "Jeffery",
-      email: "Jeffery25@gmail.com",
-      expertises: ["Laravel 12", "MYSQL", "PHP", "HTML", "CSS", "JavaScript"],
-      bio: "Backend Engineer",
-      img: "https://res.cloudinary.com/dcwnirwfq/image/upload/v1761980879/instructors/hqknoevk8wo8mxptwpmz.jpg",
-      linkedin: "https://www.linkedin.com/in/mohamed-abdullah-1890b02ab/",
-      twitter: "https://x.com/MA99851445",
-    },
+    id: apiCourse.id,
+    title: apiCourse.title,
+    description: apiCourse.description,
+    price: apiCourse.price,
+    img: apiCourse.img,
+    category: apiCourse.category,
+    instructor: apiCourse.instructor,
+    lessons: apiCourse.lessons,
+    // Mock data for fields not in API
     rating: 4.7,
     studentsCount: 12450,
-    totalHours: 42,
+    totalHours: apiCourse.lessons?.length * 0.75 || 42, // Estimate based on lessons
     language: "English",
     lastUpdated: "2025-01",
     whatYouWillLearn: [
@@ -46,69 +53,61 @@ const fetchCourseDetails = async () => {
       "Familiarity with databases (MySQL preferred)",
       "A computer with internet connection",
     ],
-    courseContent: [
-      {
-        section: "Getting Started",
-        lectures: 8,
-        duration: "1h 30m",
-        lessons: [
-          { title: "Course Introduction", duration: "5:30", preview: true },
-          { title: "Installing Laravel 12", duration: "12:45", preview: false },
-          { title: "Project Structure Overview", duration: "15:20", preview: true },
-          { title: "First Laravel Application", duration: "18:30", preview: false },
-        ],
-      },
-      {
-        section: "Routing in Laravel",
-        lectures: 12,
-        duration: "2h 45m",
-        lessons: [
-          { title: "Basic Routing", duration: "10:15", preview: false },
-          { title: "Route Parameters", duration: "14:20", preview: false },
-          { title: "Named Routes", duration: "8:45", preview: false },
-          { title: "Route Groups", duration: "16:30", preview: false },
-        ],
-      },
-      {
-        section: "Middleware",
-        lectures: 10,
-        duration: "2h 15m",
-        lessons: [
-          { title: "Understanding Middleware", duration: "12:30", preview: false },
-          { title: "Creating Custom Middleware", duration: "18:45", preview: false },
-          { title: "Middleware Groups", duration: "15:20", preview: false },
-        ],
-      },
-      {
-        section: "Controllers",
-        lectures: 15,
-        duration: "3h 30m",
-        lessons: [
-          { title: "Controller Basics", duration: "10:15", preview: false },
-          { title: "Resource Controllers", duration: "20:30", preview: false },
-          { title: "Controller Middleware", duration: "12:45", preview: false },
-        ],
-      },
-    ],
+    courseContent:
+      apiCourse.lessons?.length > 0
+        ? groupLessonsIntoSections(apiCourse.lessons)
+        : [],
   };
 };
 
+// Helper function to group lessons into sections
+const groupLessonsIntoSections = (lessons) => {
+  const sections = [];
+  const lessonsPerSection = 4;
+
+  for (let i = 0; i < lessons.length; i += lessonsPerSection) {
+    const sectionLessons = lessons.slice(i, i + lessonsPerSection);
+    sections.push({
+      section: `Section ${Math.floor(i / lessonsPerSection) + 1}`,
+      lectures: sectionLessons.length,
+      duration: `${sectionLessons.length * 15}m`, // Estimate
+      lessons: sectionLessons.map((lesson, idx) => ({
+        title: lesson.title,
+        duration: lesson.duration || `${10 + idx * 2}:00`,
+        preview: idx === 0, // First lesson in each section is preview
+      })),
+    });
+  }
+
+  return sections;
+};
+
 export default function CourseDetailPage() {
+  const { courseId } = useParams();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [expandedSections, setExpandedSections] = useState([0]);
 
   useEffect(() => {
-    loadCourse();
-  }, []);
+    if (courseId) {
+      loadCourse();
+    } else {
+      setError("Course ID is missing");
+      setLoading(false);
+    }
+  }, [courseId]);
 
   const loadCourse = async () => {
     try {
-      const data = await fetchCourseDetails(1);
+      setLoading(true);
+      setError(null);
+      const data = await fetchCourseDetails(courseId);
       setCourse(data);
     } catch (error) {
       console.error("Error loading course:", error);
+      setError(error.message || "Failed to load course");
     } finally {
       setLoading(false);
     }
@@ -122,44 +121,64 @@ export default function CourseDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2" style={{ borderColor: 'var(--Primary-1)' }}></div>
+      <div className="flex justify-center items-center min-h-screen bg-gray-50">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen bg-gray-50">
+        <p className="text-red-500 text-lg mb-4">Error: {error}</p>
+        <button
+          onClick={loadCourse}
+          className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Retry
+        </button>
       </div>
     );
   }
 
   if (!course) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
+      <div className="flex justify-center items-center min-h-screen bg-gray-50">
         <p className="text-gray-500">Course not found</p>
       </div>
     );
   }
 
   return (
-    <>
-    <Header/>
-    <div className="min-h-screen mt-[80px]" style={{ backgroundColor: 'var(--Secondary-1)' }}>
+    <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="text-white py-8" style={{ backgroundColor: 'var(--Primary-2)' }}>
+      <div className="bg-blue-900 text-white py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Content */}
             <div className="lg:col-span-2">
               {/* Breadcrumb */}
-              <div className="text-sm mb-4" style={{ color: '#a8c5e8' }}>
-                <span className="hover:underline cursor-pointer">Development</span>
+              <div className="text-sm mb-4 text-blue-200">
+                <span className="hover:underline cursor-pointer">
+                  Development
+                </span>
                 <span className="mx-2">›</span>
-                <span className="hover:underline cursor-pointer">{course.category.name}</span>
+                <span className="hover:underline cursor-pointer">
+                  {course.category.name}
+                </span>
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">{course.title}</h1>
-              <p className="text-lg mb-6" style={{ color: '#d4e3f3' }}>{course.category.description}</p>
+              <h1 className="text-3xl md:text-4xl font-bold mb-4">
+                {course.title}
+              </h1>
+              <p className="text-lg mb-6 text-blue-100">{course.description}</p>
 
               {/* Stats */}
               <div className="flex flex-wrap items-center gap-6 text-sm">
                 <div className="flex items-center gap-1">
-                  <span className="text-yellow-400 font-bold">{course.rating}</span>
+                  <span className="text-yellow-400 font-bold">
+                    {course.rating}
+                  </span>
                   <div className="flex">
                     {[...Array(5)].map((_, i) => (
                       <Star
@@ -172,7 +191,7 @@ export default function CourseDetailPage() {
                       />
                     ))}
                   </div>
-                  <span className="underline ml-1" style={{ color: '#a8c5e8' }}>
+                  <span className="underline ml-1 text-blue-200">
                     ({course.studentsCount} ratings)
                   </span>
                 </div>
@@ -184,19 +203,19 @@ export default function CourseDetailPage() {
 
               {/* Instructor */}
               <div className="flex items-center gap-3 mt-6">
-                <span style={{ color: '#d4e3f3' }}>Created by</span>
+                <span className="text-blue-100">Created by</span>
                 <img
                   src={course.instructor.img}
                   alt={course.instructor.name}
                   className="w-8 h-8 rounded-full object-cover"
                 />
-                <span className="hover:underline cursor-pointer" style={{ color: '#a8c5e8' }}>
+                <span className="hover:underline cursor-pointer text-blue-200">
                   {course.instructor.name}
                 </span>
               </div>
 
               {/* Meta Info */}
-              <div className="flex flex-wrap items-center gap-6 mt-6 text-sm" style={{ color: '#d4e3f3' }}>
+              <div className="flex flex-wrap items-center gap-6 mt-6 text-sm text-blue-100">
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
                   <span>Last updated {course.lastUpdated}</span>
@@ -222,22 +241,13 @@ export default function CourseDetailPage() {
                   </button>
                 </div>
                 <div className="p-6">
-                  <div className="text-3xl font-bold mb-4" style={{ color: 'var(--Primary-2)' }}>
+                  <div className="text-3xl font-bold mb-4 text-blue-900">
                     ${course.price}
                   </div>
-                  <button 
-                    className="w-full text-white font-bold py-3 rounded mb-3 transition-colors hover:opacity-90"
-                    style={{ backgroundColor: 'var(--Primary-1)' }}
-                  >
+                  <button className="w-full bg-purple-600 text-white font-bold py-3 rounded mb-3 transition-colors hover:bg-purple-700">
                     Add to cart
                   </button>
-                  <button 
-                    className="w-full font-bold py-3 rounded border-2 transition-colors hover:bg-gray-50"
-                    style={{ 
-                      color: 'var(--Primary-2)',
-                      borderColor: 'var(--Primary-2)'
-                    }}
-                  >
+                  <button className="w-full text-blue-900 font-bold py-3 rounded border-2 border-blue-900 transition-colors hover:bg-gray-50">
                     Buy now
                   </button>
                   <p className="text-center text-sm text-gray-600 mt-4">
@@ -245,24 +255,26 @@ export default function CourseDetailPage() {
                   </p>
 
                   <div className="mt-6 pt-6 border-t border-gray-200">
-                    <p className="font-bold mb-3" style={{ color: 'var(--Primary-2)' }}>
+                    <p className="font-bold mb-3 text-blue-900">
                       This course includes:
                     </p>
                     <ul className="space-y-2 text-sm text-gray-700">
                       <li className="flex items-center gap-2">
-                        <PlayCircle className="w-4 h-4" style={{ color: 'var(--Primary-1)' }} />
-                        <span>{course.totalHours} hours on-demand video</span>
+                        <PlayCircle className="w-4 h-4 text-purple-600" />
+                        <span>
+                          {Math.round(course.totalHours)} hours on-demand video
+                        </span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <FileText className="w-4 h-4" style={{ color: 'var(--Primary-1)' }} />
-                        <span>45 articles</span>
+                        <FileText className="w-4 h-4 text-purple-600" />
+                        <span>{course.lessons?.length || 0} lessons</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <Download className="w-4 h-4" style={{ color: 'var(--Primary-1)' }} />
-                        <span>20 downloadable resources</span>
+                        <Download className="w-4 h-4 text-purple-600" />
+                        <span>Downloadable resources</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <Award className="w-4 h-4" style={{ color: 'var(--Primary-1)' }} />
+                        <Award className="w-4 h-4 text-purple-600" />
                         <span>Certificate of completion</span>
                       </li>
                     </ul>
@@ -286,13 +298,9 @@ export default function CourseDetailPage() {
                   onClick={() => setActiveTab("overview")}
                   className={`pb-4 font-semibold transition-colors ${
                     activeTab === "overview"
-                      ? "border-b-2"
+                      ? "border-b-2 border-purple-600 text-blue-900"
                       : "text-gray-600 hover:text-gray-900"
                   }`}
-                  style={activeTab === "overview" ? { 
-                    borderColor: 'var(--Primary-1)',
-                    color: 'var(--Primary-2)'
-                  } : {}}
                 >
                   Overview
                 </button>
@@ -300,13 +308,9 @@ export default function CourseDetailPage() {
                   onClick={() => setActiveTab("curriculum")}
                   className={`pb-4 font-semibold transition-colors ${
                     activeTab === "curriculum"
-                      ? "border-b-2"
+                      ? "border-b-2 border-purple-600 text-blue-900"
                       : "text-gray-600 hover:text-gray-900"
                   }`}
-                  style={activeTab === "curriculum" ? { 
-                    borderColor: 'var(--Primary-1)',
-                    color: 'var(--Primary-2)'
-                  } : {}}
                 >
                   Curriculum
                 </button>
@@ -314,13 +318,9 @@ export default function CourseDetailPage() {
                   onClick={() => setActiveTab("instructor")}
                   className={`pb-4 font-semibold transition-colors ${
                     activeTab === "instructor"
-                      ? "border-b-2"
+                      ? "border-b-2 border-purple-600 text-blue-900"
                       : "text-gray-600 hover:text-gray-900"
                   }`}
-                  style={activeTab === "instructor" ? { 
-                    borderColor: 'var(--Primary-1)',
-                    color: 'var(--Primary-2)'
-                  } : {}}
                 >
                   Instructor
                 </button>
@@ -331,8 +331,8 @@ export default function CourseDetailPage() {
             {activeTab === "overview" && (
               <div className="space-y-8">
                 {/* What you'll learn */}
-                <div className="bg-white rounded-lg p-6 border-2" style={{ borderColor: 'var(--Secondary-1)' }}>
-                  <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--Primary-2)' }}>
+                <div className="bg-white rounded-lg p-6 border-2 border-gray-100">
+                  <h2 className="text-2xl font-bold mb-4 text-blue-900">
                     What you'll learn
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -347,12 +347,15 @@ export default function CourseDetailPage() {
 
                 {/* Requirements */}
                 <div className="bg-white rounded-lg p-6">
-                  <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--Primary-2)' }}>
+                  <h2 className="text-2xl font-bold mb-4 text-blue-900">
                     Requirements
                   </h2>
                   <ul className="space-y-2">
                     {course.requirements.map((req, index) => (
-                      <li key={index} className="flex items-start gap-2 text-gray-700">
+                      <li
+                        key={index}
+                        className="flex items-start gap-2 text-gray-700"
+                      >
                         <span className="text-gray-400">•</span>
                         <span>{req}</span>
                       </li>
@@ -362,13 +365,13 @@ export default function CourseDetailPage() {
 
                 {/* Description */}
                 <div className="bg-white rounded-lg p-6">
-                  <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--Primary-2)' }}>
+                  <h2 className="text-2xl font-bold mb-4 text-blue-900">
                     Description
                   </h2>
                   <p className="text-gray-700 leading-relaxed">
-                    Master Laravel 12 from scratch with this comprehensive course. Learn everything from basic routing to advanced
-                    concepts like middleware, form requests, and controllers. Build real-world applications and deploy them to production.
-                    This course is perfect for developers who want to master modern PHP development with Laravel.
+                    {course.category.description}. This comprehensive course
+                    covers {course.description} and more. Perfect for developers
+                    who want to master modern PHP development with Laravel.
                   </p>
                 </div>
               </div>
@@ -376,72 +379,90 @@ export default function CourseDetailPage() {
 
             {activeTab === "curriculum" && (
               <div className="bg-white rounded-lg p-6">
-                <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--Primary-2)' }}>
+                <h2 className="text-2xl font-bold mb-6 text-blue-900">
                   Course content
                 </h2>
-                <div className="space-y-2">
-                  {course.courseContent.map((section, index) => (
-                    <div key={index} className="border rounded-lg overflow-hidden" style={{ borderColor: 'var(--Secondary-1)' }}>
-                      <button
-                        onClick={() => toggleSection(index)}
-                        className="w-full flex items-center justify-between p-4 transition-colors"
-                        style={{ 
-                          backgroundColor: expandedSections.includes(index) ? 'var(--Secondary-1)' : '#f9fafb'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--Secondary-1)'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = expandedSections.includes(index) ? 'var(--Secondary-1)' : '#f9fafb'}
+                <p className="text-gray-600 mb-4">
+                  {course.lessons?.length || 0} lessons
+                </p>
+                {course.courseContent.length > 0 ? (
+                  <div className="space-y-2">
+                    {course.courseContent.map((section, index) => (
+                      <div
+                        key={index}
+                        className="border rounded-lg overflow-hidden border-gray-200"
                       >
-                        <div className="flex items-center gap-3">
-                          <svg
-                            className={`w-4 h-4 transition-transform ${
-                              expandedSections.includes(index) ? "rotate-90" : ""
-                            }`}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            style={{ color: 'var(--Primary-1)' }}
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                          <span className="font-semibold" style={{ color: 'var(--Primary-2)' }}>
-                            {section.section}
-                          </span>
-                        </div>
-                        <span className="text-sm text-gray-600">
-                          {section.lectures} lectures • {section.duration}
-                        </span>
-                      </button>
-                      {expandedSections.includes(index) && (
-                        <div className="bg-white">
-                          {section.lessons.map((lesson, lessonIndex) => (
-                            <div
-                              key={lessonIndex}
-                              className="flex items-center justify-between p-4 border-t hover:bg-gray-50"
-                              style={{ borderColor: 'var(--Secondary-1)' }}
+                        <button
+                          onClick={() => toggleSection(index)}
+                          className={`w-full flex items-center justify-between p-4 transition-colors ${
+                            expandedSections.includes(index)
+                              ? "bg-gray-50"
+                              : "bg-white hover:bg-gray-50"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <svg
+                              className={`w-4 h-4 transition-transform text-purple-600 ${
+                                expandedSections.includes(index)
+                                  ? "rotate-90"
+                                  : ""
+                              }`}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
                             >
-                              <div className="flex items-center gap-3">
-                                <PlayCircle className="w-4 h-4" style={{ color: 'var(--Primary-1)' }} />
-                                <span className="text-gray-700">{lesson.title}</span>
-                                {lesson.preview && (
-                                  <span className="text-xs font-semibold" style={{ color: 'var(--Primary-1)' }}>
-                                    Preview
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 5l7 7-7 7"
+                              />
+                            </svg>
+                            <span className="font-semibold text-blue-900">
+                              {section.section}
+                            </span>
+                          </div>
+                          <span className="text-sm text-gray-600">
+                            {section.lectures} lectures • {section.duration}
+                          </span>
+                        </button>
+                        {expandedSections.includes(index) && (
+                          <div className="bg-white">
+                            {section.lessons.map((lesson, lessonIndex) => (
+                              <div
+                                key={lessonIndex}
+                                className="flex items-center justify-between p-4 border-t hover:bg-gray-50 border-gray-100"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <PlayCircle className="w-4 h-4 text-purple-600" />
+                                  <span className="text-gray-700">
+                                    {lesson.title}
                                   </span>
-                                )}
+                                  {lesson.preview && (
+                                    <span className="text-xs font-semibold text-purple-600">
+                                      Preview
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-sm text-gray-600">
+                                  {lesson.duration}
+                                </span>
                               </div>
-                              <span className="text-sm text-gray-600">{lesson.duration}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500">No curriculum available yet.</p>
+                )}
               </div>
             )}
 
             {activeTab === "instructor" && (
               <div className="bg-white rounded-lg p-6">
-                <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--Primary-2)' }}>
+                <h2 className="text-2xl font-bold mb-6 text-blue-900">
                   Instructor
                 </h2>
                 <div className="flex flex-col md:flex-row items-start gap-6">
@@ -451,17 +472,18 @@ export default function CourseDetailPage() {
                     className="w-32 h-32 rounded-full object-cover"
                   />
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--Primary-2)' }}>
+                    <h3 className="text-xl font-bold mb-2 text-blue-900">
                       {course.instructor.name}
                     </h3>
-                    <p className="text-gray-600 mb-4">{course.instructor.bio}</p>
+                    <p className="text-gray-600 mb-4">
+                      {course.instructor.bio}
+                    </p>
                     <div className="flex gap-4 mb-4">
                       <a
                         href={course.instructor.linkedin}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="hover:underline"
-                        style={{ color: 'var(--Primary-1)' }}
+                        className="text-purple-600 hover:underline"
                       >
                         LinkedIn
                       </a>
@@ -469,25 +491,20 @@ export default function CourseDetailPage() {
                         href={course.instructor.twitter}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="hover:underline"
-                        style={{ color: 'var(--Primary-1)' }}
+                        className="text-purple-600 hover:underline"
                       >
                         Twitter
                       </a>
                     </div>
                     <div>
-                      <p className="font-semibold mb-2" style={{ color: 'var(--Primary-2)' }}>
+                      <p className="font-semibold mb-2 text-blue-900">
                         Expertise:
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {course.instructor.expertises.map((exp, index) => (
                           <span
                             key={index}
-                            className="px-3 py-1 rounded-full text-sm"
-                            style={{ 
-                              backgroundColor: 'var(--Secondary-1)',
-                              color: 'var(--Primary-2)'
-                            }}
+                            className="px-3 py-1 rounded-full text-sm bg-gray-100 text-blue-900"
                           >
                             {exp}
                           </span>
@@ -499,30 +516,20 @@ export default function CourseDetailPage() {
               </div>
             )}
           </div>
-
-          {/* Right Sidebar Placeholder (Mobile shows floating button instead) */}
-          <div className="lg:hidden"></div>
         </div>
       </div>
 
       {/* Mobile Fixed Bottom Bar */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-50">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div>
-            <div className="text-2xl font-bold" style={{ color: 'var(--Primary-2)' }}>
-              ${course.price}
-            </div>
+          <div className="text-2xl font-bold text-blue-900">
+            ${course.price}
           </div>
-          <button 
-            className="text-white font-bold py-3 px-8 rounded transition-colors hover:opacity-90"
-            style={{ backgroundColor: 'var(--Primary-1)' }}
-          >
+          <button className="bg-purple-600 text-white font-bold py-3 px-8 rounded transition-colors hover:bg-purple-700">
             Buy now
           </button>
         </div>
       </div>
     </div>
-    <Footer/>
-    </>
   );
 }
