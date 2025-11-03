@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useCart } from "../hooks/useCart";
+import { handleLogout as authLogout } from "../utils/auth";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { itemCount } = useCart();
 
   const navigate = useNavigate();
 
@@ -30,9 +33,7 @@ export default function Header() {
   }
 
   function handleLogout() {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("userName");
-    localStorage.removeItem("authToken");
+    authLogout();
     setIsProfileOpen(false);
     setIsMenuOpen(false);
     navigate("/");
@@ -91,12 +92,15 @@ export default function Header() {
 
         {/* Right Side Actions */}
         <div className="hidden md:flex items-center gap-4">
-          <button className="text-xl text-gray-700 hover:text-blue-600 transition-all duration-300 relative">
+          <Link
+            to="/cart"
+            className="text-xl text-gray-700 hover:text-blue-600 transition-all duration-300 relative"
+          >
             <i className="fa-solid fa-cart-shopping"></i>
             <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-              0
+              {itemCount}
             </span>
-          </button>
+          </Link>
 
           {isLoggedIn ? (
             <div className="relative">
@@ -200,10 +204,14 @@ export default function Header() {
             </Link>
 
             <div className="border-t border-gray-200 mt-4 pt-4">
-              <button className="w-full py-3 px-4 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-200 flex items-center justify-between">
-                <span>Cart</span>
+              <Link
+                to="/cart"
+                onClick={() => setIsMenuOpen(false)}
+                className="w-full py-3 px-4 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-200 flex items-center justify-between"
+              >
+                <span>Cart ({itemCount})</span>
                 <i className="fa-solid fa-cart-shopping"></i>
-              </button>
+              </Link>
 
               {isLoggedIn ? (
                 <>

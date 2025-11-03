@@ -16,38 +16,43 @@ import InstructorProfile from "./Pages/Teachers/InstructorProfile";
 import ContactPage from "./Pages/Contact/Contact";
 import CourseDetailPage from "./Pages/Course/Course";
 import Admin from "./Pages/Admin/Admin";
+import Cart from "./Pages/cart/Cart";
+import { CartProvider } from "./context/CartContext";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Redirect root to login */}
-        <Route path="/" element={<Home />} />
-        <Route path="/home" element={<Home />} />
+    <CartProvider>
+      <Router>
+        <Routes>
+          {/* Redirect root to login */}
+          <Route path="/" element={<Home />} />
+          <Route path="/home" element={<Home />} />
 
-        {/* Auth routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+          {/* Auth routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
 
-        {/* Main app routes */}
-        <Route path="/courses" element={<Courses />} />
+          {/* Main app routes */}
+          <Route path="/courses" element={<Courses />} />
+          <Route path="/cart" element={<Cart />} />
 
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/teachers" element={<Teachers />} />
-        <Route
-          path="/instructor/:instructorId"
-          element={<InstructorProfile />}
-        />
-        <Route path="/contact" element={<ContactPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/teachers" element={<Teachers />} />
+          <Route
+            path="/instructor/:instructorId"
+            element={<InstructorProfile />}
+          />
+          <Route path="/contact" element={<ContactPage />} />
 
-        <Route path="/course/:courseId" element={<CourseDetailPage />} />
+          <Route path="/course/:courseId" element={<CourseDetailPage />} />
 
-        <Route path="/admin" element={<Admin /> } />
+          <Route path="/admin" element={<Admin />} />
 
-        {/* 404 */}
-        <Route path="*" element={<Error404 />} />
-      </Routes>
-    </Router>
+          {/* 404 */}
+          <Route path="*" element={<Error404 />} />
+        </Routes>
+      </Router>
+    </CartProvider>
   );
 }
 
