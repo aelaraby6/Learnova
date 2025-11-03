@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://learnova-api-production.up.railway.app/api/v1/";
+const API_BASE_URL = "https://web-production-5be4a.up.railway.app/api/v1/";
 
 class ApiError extends Error {
   constructor(message, status, response) {
@@ -27,14 +27,14 @@ async function apiCall(endpoint, options = {}) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      
+
       // Log full error details for debugging
       console.error("API Error Details:", {
         status: response.status,
         url,
-        errorData
+        errorData,
       });
-      
+
       throw new ApiError(
         errorData.message || `HTTP Error! Status: ${response.status}`,
         response.status,
@@ -90,7 +90,8 @@ export const postFormData = (endpoint, formData, token = null) =>
   });
 
 export const getWithAuth = (endpoint, token) => get(endpoint, token);
-export const postWithAuth = (endpoint, data, token) => post(endpoint, data, token);
+export const postWithAuth = (endpoint, data, token) =>
+  post(endpoint, data, token);
 
 export default {
   get,

@@ -16,7 +16,7 @@ const InstructorProfile = () => {
     const fetchInstructor = async () => {
       try {
         const token = localStorage.getItem("authToken");
-        const response = await get(`admin/instructors/${instructorId}`, token);
+        const response = await get(`instructors/${instructorId}`, token);
 
         if (response.status && response.instructor) {
           setInstructor(response.instructor);

@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import "../../../styles/global.css";
 import { validateLogin } from "../../../validations/loginValidation";
 import { postFormData } from "../../../utils/api";
+import { handleLogin } from "../../../utils/auth";
 import LoadingOverlay from "../../../components/Loading";
 
 export default function Login() {
@@ -53,12 +54,8 @@ export default function Login() {
 
         console.log("Login successful:", response);
 
-        // Store token if provided
-        if (response.token) {
-          localStorage.setItem("authToken", response.token);
-          localStorage.setItem("isLoggedIn", "true");
-          localStorage.setItem("userName", response.user?.name || "User");
-        }
+        // Handle login using utility function
+        handleLogin(response);
 
         navigate("/profile");
       } catch (error) {

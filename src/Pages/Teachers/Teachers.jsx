@@ -20,7 +20,7 @@ const Teachers = () => {
     const fetchTeachers = async () => {
       try {
         const token = localStorage.getItem("authToken");
-        const res = await get("admin/instructors", token);
+        const res = await get("instructors", token);
         if (res.status && res.instructors) {
           setTeachers(res.instructors);
         } else {
