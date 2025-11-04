@@ -1,16 +1,15 @@
 "use client";
 
-import { useRef } from "react";
+import { useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import CourseCard from "../course";
+import CourseCard from "../../components/Course";
 
 export default function CoursesSlider() {
-  const prevRef = useRef(null);
-  const nextRef = useRef(null);
+  const [swiperInstance, setSwiperInstance] = useState(null);
 
   const courses = [
     {
@@ -79,48 +78,86 @@ export default function CoursesSlider() {
   ];
 
   return (
-    <div className="w-full max-w-6xl mx-auto my-[80px] relative">
+    <div className="w-full max-w-7xl mx-auto my-20 px-4 relative mt-32">
       <h2
         className="text-4xl font-bold text-center mb-12"
-        style={{ color: "var(--Primary-1)" }}
+        style={{ color: "var(--Primary-1, #6366f1)" }}
       >
         Browse our popular courses
       </h2>
 
-      <Swiper
-        modules={[Navigation]}
-        loop={true}
-        spaceBetween={24}
-        slidesPerView={3}
-        className="pb-16"
-        onBeforeInit={(swiper) => {
-          swiper.params.navigation.prevEl = prevRef.current;
-          swiper.params.navigation.nextEl = nextRef.current;
-        }}
-        navigation={{
-          prevEl: prevRef.current,
-          nextEl: nextRef.current,
-        }}
-      >
-        {courses.map((course, index) => (
-          <SwiperSlide key={index} className="pb-6 pt-6">
-            <CourseCard {...course} />
-          </SwiperSlide>
-        ))}
-      </Swiper>
+      <div className="relative px-14">
+        <Swiper
+          modules={[Navigation]}
+          loop={true}
+          spaceBetween={24}
+          slidesPerView={1}
+          breakpoints={{
+            640: {
+              slidesPerView: 2,
+              spaceBetween: 20,
+            },
+            1024: {
+              slidesPerView: 3,
+              spaceBetween: 24,
+            },
+          }}
+          onSwiper={setSwiperInstance}
+          className="pb-8"
+        >
+          {courses.map((course, index) => (
+            <SwiperSlide key={index}>
+              <CourseCard {...course} />
+            </SwiperSlide>
+          ))}
+        </Swiper>
 
-      {/* Navigation Buttons */}
-      <div
-        ref={prevRef}
-        className="custom-prev absolute left-0 top-1/2 -translate-y-1/2 bg-[var(--Primary-1)] shadow-lg w-10 h-10 flex items-center justify-center rounded-full cursor-pointer z-10"
-      >
-        <ChevronLeft className="w-6 h-6 text-white" />
-      </div>
-      <div
-        ref={nextRef}
-        className="custom-next absolute right-0 top-1/2 -translate-y-1/2 bg-[var(--Primary-1)] shadow-lg w-10 h-10 flex items-center justify-center rounded-full cursor-pointer z-10"
-      >
-        <ChevronRight className="w-6 h-6 text-white" />
+        {/* Enhanced Navigation Buttons */}
+        <button
+          onClick={() => swiperInstance?.slidePrev()}
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 group"
+          aria-label="Previous slide"
+        >
+          <div
+            className="w-12 h-12 rounded-full bg-white shadow-lg hover:shadow-2xl transition-all duration-300 flex items-center justify-center border-2 group-hover:scale-110"
+            style={{ borderColor: "transparent" }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.borderColor = "#064ea4")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.borderColor = "transparent")
+            }
+          >
+            <ChevronLeft
+              className="w-6 h-6"
+              strokeWidth={2.5}
+              color="#064ea4"
+            />
+          </div>
+        </button>
+
+        <button
+          onClick={() => swiperInstance?.slideNext()}
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 group"
+          aria-label="Next slide"
+        >
+          <div
+            className="w-12 h-12 rounded-full bg-white shadow-lg hover:shadow-2xl transition-all duration-300 flex items-center justify-center border-2 group-hover:scale-110"
+            style={{ borderColor: "transparent" }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.borderColor = "#064ea4")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.borderColor = "transparent")
+            }
+          >
+            <ChevronRight
+              className="w-6 h-6"
+              strokeWidth={2.5}
+              color="#064ea4"
+            />
+          </div>
+        </button>
       </div>
     </div>
   );

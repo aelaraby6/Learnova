@@ -7,12 +7,16 @@ import {
   FolderOpen,
   GraduationCap,
   ShoppingCart,
+  BookOpen,
+  Video,
 } from "lucide-react";
 import UsersSection from "./users";
 import ContactsSection from "./contacts";
 import CategoriesSection from "./categories";
 import InstructorsSection from "./Instructors";
 import OrdersSection from "./Orders";
+import CoursesSection from "./Courses";
+import LessonsSection from "./Lessons";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("users");
@@ -23,9 +27,10 @@ export default function AdminDashboard() {
     { id: "instructors", label: "Instructors", icon: GraduationCap },
     { id: "contacts", label: "Contacts", icon: Mail },
     { id: "categories", label: "Categories", icon: FolderOpen },
+    { id: "courses", label: "Courses", icon: BookOpen },
+    { id: "lessons", label: "Lessons", icon: Video },
     { id: "orders", label: "Orders", icon: ShoppingCart },
   ];
-
   const renderContent = () => {
     switch (activeTab) {
       case "users":
@@ -36,6 +41,10 @@ export default function AdminDashboard() {
         return <ContactsSection />;
       case "categories":
         return <CategoriesSection />;
+      case "courses":
+        return <CoursesSection />;
+      case "lessons":
+        return <LessonsSection />;
       case "orders":
         return <OrdersSection />;
       default:
@@ -53,8 +62,13 @@ export default function AdminDashboard() {
         return "Manage contact submissions";
       case "categories":
         return "Manage course categories";
+      case "courses":
+        return "Manage courses and their content";
       case "orders":
         return "Manage customer orders";
+      case "lessons":
+        return "Manage course lessons and videos";
+
       default:
         return "";
     }

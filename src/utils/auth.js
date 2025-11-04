@@ -13,6 +13,7 @@ export const handleLogin = (response) => {
   if (response.token) {
     localStorage.setItem("authToken", response.token);
     localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("role", response.user.role);
     localStorage.setItem("userName", response.user?.name || "User");
 
     // Notify other components about login

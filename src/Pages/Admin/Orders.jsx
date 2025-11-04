@@ -20,7 +20,10 @@ const OrdersSection = () => {
 
       const response = await get("admin/orders", token);
 
-      if (response.status && response.orders) {
+      // Handle the response structure from your API
+      if (response.orders && Array.isArray(response.orders)) {
+        setOrders(response.orders);
+      } else if (response.status && response.orders) {
         setOrders(response.orders);
       } else if (Array.isArray(response)) {
         setOrders(response);
@@ -139,7 +142,7 @@ const OrdersSection = () => {
                 >
                   <td className="py-4 px-6">
                     <span className="font-medium text-gray-900">
-                      #{order.id || order.orderId || "N/A"}
+                      #{order.id || "N/A"}
                     </span>
                   </td>
                   <td className="py-4 px-6">
@@ -148,8 +151,8 @@ const OrdersSection = () => {
                         className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold"
                         style={{ backgroundColor: "#064ea4" }}
                       >
-                        {order.customerName || order.customer
-                          ? (order.customerName || order.customer)
+                        {order.user?.name
+                          ? order.user.name
                               .split(" ")
                               .map((n) => n[0])
                               .join("")
@@ -158,22 +161,22 @@ const OrdersSection = () => {
                       </div>
                       <div>
                         <div className="font-medium text-gray-900">
-                          {order.customerName || order.customer || "Unknown"}
+                          {order.user?.name || "Unknown"}
                         </div>
-                        {order.email && (
+                        {order.user?.email && (
                           <div className="text-xs text-gray-500">
-                            {order.email}
+                            {order.user.email}
                           </div>
                         )}
                       </div>
                     </div>
                   </td>
                   <td className="py-4 px-6 text-gray-600">
-                    {formatDate(order.date || order.createdAt || order.orderDate)}
+                    {formatDate(order.created_at)}
                   </td>
                   <td className="py-4 px-6">
                     <span className="font-semibold text-gray-900">
-                      ${order.total || order.amount || "0.00"}
+                      ${order.total || "0.00"}
                     </span>
                   </td>
                   <td className="py-4 px-6">
