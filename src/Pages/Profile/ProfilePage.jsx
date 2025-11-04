@@ -20,6 +20,7 @@ export default function ProfilePage() {
   const [apiError, setApiError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
+  const [orders, setOrders] = useState([]); // ✅ new state for orders
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -33,8 +34,6 @@ export default function ProfilePage() {
       setIsLoading(true);
       try {
         const response = await get("profile", token);
-
-        // Handle nested user object in response
         const userData = response.user || response;
 
         setForm({
@@ -45,7 +44,6 @@ export default function ProfilePage() {
           newPassword: "",
         });
 
-        // Handle img or photo field
         if (userData.img || userData.photo) {
           setPreview(userData.img || userData.photo);
         }
@@ -60,6 +58,23 @@ export default function ProfilePage() {
     fetchProfile();
   }, []);
 
+  // ✅ New useEffect to fetch user orders
+  useEffect(() => {
+    const fetchOrders = async () => {
+      const token = localStorage.getItem("authToken");
+      if (!token) return;
+
+      try {
+        const response = await get("user/orders/pending", token);
+        setOrders(response.orders || []);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    };
+
+    if (activeTab === "My Orders") fetchOrders();
+  }, [activeTab]);
+
   const handleUpload = async () => {
     if (!selectedFile) {
       setApiError("Please select a photo first");
@@ -67,7 +82,6 @@ export default function ProfilePage() {
     }
 
     const token = localStorage.getItem("authToken");
-
     if (!token) {
       setApiError("Please login first");
       return;
@@ -83,9 +97,7 @@ export default function ProfilePage() {
       formData.append("_method", "PUT");
 
       const response = await postFormData("user/avatar", formData, token);
-
       setSuccessMessage("Photo uploaded successfully!", response);
-
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
       console.error("Photo upload error:", error);
@@ -152,16 +164,12 @@ export default function ProfilePage() {
       }
 
       const response = await put("profile", updateData, token);
-
       console.log("Profile update successful:", response);
       setSuccessMessage("Profile updated successfully!");
-
       setForm({ ...form, password: "", newPassword: "" });
-
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
       console.error("Profile update error:", error);
-
       let errorMessage = "Failed to update profile";
 
       if (error.response?.errors) {
@@ -185,7 +193,11 @@ export default function ProfilePage() {
     }
   };
 
-  const navItems = [{ name: "Profile" }, { name: "Photo" }];
+  const navItems = [
+    { name: "Profile" },
+    { name: "Photo" },
+    { name: "My Orders" },
+  ];
 
   return (
     <>
@@ -435,9 +447,64 @@ export default function ProfilePage() {
                 </div>
               </div>
             )}
-            
-            
 
+            {activeTab === "My Orders" && (
+              <div>
+                <h1 className="text-2xl font-bold mb-4">My Orders</h1>
+
+                {orders.length === 0 ? (
+                  <p className="text-gray-600">You have no pending orders.</p>
+                ) : (
+                  <div className="space-y-6">
+                    {orders.map((order) => (
+                      <div
+                        key={order.id}
+                        className="border rounded-lg p-4 shadow-sm bg-white"
+                      >
+                        <div className="flex justify-between items-center mb-3">
+                          <h2 className="font-semibold">
+                            Order #{order.id} - {order.status}
+                          </h2>
+                          <span className="text-gray-500 text-sm">
+                            {new Date(order.created_at).toLocaleString()}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-2">
+                          Total:{" "}
+                          <span className="font-semibold">${order.total}</span>
+                        </p>
+
+                        <div className="space-y-3">
+                          {order.cart_items.map((item) => (
+                            <div
+                              key={item.id}
+                              className="flex items-center space-x-4 border-t pt-3"
+                            >
+                              <img
+                                src={item.course.img}
+                                alt={item.course.title}
+                                className="w-16 h-16 object-cover rounded"
+                              />
+                              <div>
+                                <h3 className="font-medium">
+                                  {item.course.title}
+                                </h3>
+                                <p className="text-gray-500 text-sm">
+                                  {item.course.description}
+                                </p>
+                                <p className="text-blue-600 font-semibold">
+                                  ${item.course.price}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="w-full flex justify-center mt-10">

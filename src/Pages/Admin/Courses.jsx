@@ -1,23 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { UserSquare, Plus, Trash2, X } from "lucide-react";
+import { BookOpen, Plus, Trash2, X } from "lucide-react";
 import { get, postFormData, del } from "../../utils/api";
 
-const InstructorsSection = () => {
+const CoursesSection = () => {
+  const [courses, setCourses] = useState([]);
   const [instructors, setInstructors] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
-    bio: "",
-    linkedin: "",
-    twitter: "",
-    email: "",
+    instructor_id: "",
+    category_id: "",
+    title: "",
+    price: "",
+    description: "",
     img: null,
   });
 
   useEffect(() => {
-    fetchInstructors();
+    fetchData();
   }, []);
 
   // Get token from localStorage
@@ -25,24 +27,45 @@ const InstructorsSection = () => {
     return localStorage.getItem("token") || localStorage.getItem("authToken");
   };
 
-  const fetchInstructors = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
 
       const token = getToken();
-      const response = await get("instructors", token);
 
-      if (response.status && response.instructors) {
-        setInstructors(response.instructors);
-      } else if (Array.isArray(response)) {
-        setInstructors(response);
-      } else if (response.data) {
-        setInstructors(response.data);
+      // Fetch courses
+      const coursesResponse = await get("admin/courses", token);
+      if (coursesResponse.status && coursesResponse.courses) {
+        setCourses(coursesResponse.courses);
+      } else if (Array.isArray(coursesResponse)) {
+        setCourses(coursesResponse);
+      } else if (coursesResponse.data) {
+        setCourses(coursesResponse.data);
+      }
+
+      // Fetch instructors
+      const instructorsResponse = await get("instructors", token);
+      if (instructorsResponse.status && instructorsResponse.instructors) {
+        setInstructors(instructorsResponse.instructors);
+      } else if (Array.isArray(instructorsResponse)) {
+        setInstructors(instructorsResponse);
+      } else if (instructorsResponse.data) {
+        setInstructors(instructorsResponse.data);
+      }
+
+      // Fetch categories
+      const categoriesResponse = await get("categories", token);
+      if (categoriesResponse.status && categoriesResponse.categories) {
+        setCategories(categoriesResponse.categories);
+      } else if (Array.isArray(categoriesResponse)) {
+        setCategories(categoriesResponse);
+      } else if (categoriesResponse.data) {
+        setCategories(categoriesResponse.data);
       }
     } catch (err) {
-      console.error("Error fetching instructors:", err);
-      setError(err.message || "Failed to fetch instructors");
+      console.error("Error fetching data:", err);
+      setError(err.message || "Failed to fetch data");
     } finally {
       setLoading(false);
     }
@@ -50,11 +73,11 @@ const InstructorsSection = () => {
 
   const handleOpenModal = () => {
     setFormData({
-      name: "",
-      bio: "",
-      linkedin: "",
-      twitter: "",
-      email: "",
+      instructor_id: "",
+      category_id: "",
+      title: "",
+      price: "",
+      description: "",
       img: null,
     });
     setShowModal(true);
@@ -63,11 +86,11 @@ const InstructorsSection = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setFormData({
-      name: "",
-      bio: "",
-      linkedin: "",
-      twitter: "",
-      email: "",
+      instructor_id: "",
+      category_id: "",
+      title: "",
+      price: "",
+      description: "",
       img: null,
     });
   };
@@ -80,59 +103,64 @@ const InstructorsSection = () => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.name || !formData.bio || !formData.email || !formData.img) {
-      setError(
-        "Please fill in all required fields (name, bio, email, and image)"
-      );
+    if (
+      !formData.instructor_id ||
+      !formData.category_id ||
+      !formData.title ||
+      !formData.price ||
+      !formData.description ||
+      !formData.img
+    ) {
+      setError("Please fill in all required fields");
       return;
     }
 
     try {
       // Create FormData object
       const formDataToSend = new FormData();
-      formDataToSend.append("name", formData.name);
-      formDataToSend.append("bio", formData.bio);
-      formDataToSend.append("linkedin", formData.linkedin);
-      formDataToSend.append("twitter", formData.twitter);
-      formDataToSend.append("email", formData.email);
+      formDataToSend.append("instructor_id", formData.instructor_id);
+      formDataToSend.append("category_id", formData.category_id);
+      formDataToSend.append("title", formData.title);
+      formDataToSend.append("price", formData.price);
+      formDataToSend.append("description", formData.description);
       formDataToSend.append("img", formData.img);
 
       let token = getToken();
 
       const response = await postFormData(
-        "admin/instructors",
+        "admin/courses",
         formDataToSend,
         token
       );
 
       if (response.status || response.success) {
-        // Refresh instructors list
-        await fetchInstructors();
+        // Refresh courses list
+        await fetchData();
         handleCloseModal();
       } else {
-        setError("Failed to create instructor");
+        setError("Failed to create course");
       }
     } catch (err) {
-      console.error("Error creating instructor:", err);
-      setError(err.message || "Failed to create instructor");
+      console.error("Error creating course:", err);
+      setError(err.message || "Failed to create course");
     }
   };
 
-  const handleDelete = async (instructorId) => {
-    if (window.confirm("Are you sure you want to delete this instructor?")) {
+  const handleDelete = async (courseId) => {
+    if (window.confirm("Are you sure you want to delete this course?")) {
       try {
         let token = getToken();
-        const response = await del(`admin/instructors/${instructorId}`, token);
+        const response = await del(`admin/courses/${courseId}`, token);
 
         if (response.status || response.success) {
-          // Refresh instructors list
-          await fetchInstructors();
+          // Refresh courses list
+          await fetchData();
         } else {
-          setError("Failed to delete instructor");
+          setError("Failed to delete course");
         }
       } catch (err) {
-        console.error("Error deleting instructor:", err);
-        setError(err.message || "Failed to delete instructor");
+        console.error("Error deleting course:", err);
+        setError(err.message || "Failed to delete course");
       }
     }
   };
@@ -141,7 +169,7 @@ const InstructorsSection = () => {
     return (
       <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden p-8">
         <div className="flex items-center justify-center">
-          <div className="text-gray-600">Loading instructors...</div>
+          <div className="text-gray-600">Loading courses...</div>
         </div>
       </div>
     );
@@ -172,14 +200,12 @@ const InstructorsSection = () => {
                 className="p-2 rounded-xl"
                 style={{ backgroundColor: "#0f437f" }}
               >
-                <UserSquare className="text-white" size={24} />
+                <BookOpen className="text-white" size={24} />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Instructors
-                </h2>
+                <h2 className="text-2xl font-bold text-gray-900">Courses</h2>
                 <p className="text-sm text-gray-600">
-                  {instructors.length} total instructors
+                  {courses.length} total courses
                 </p>
               </div>
             </div>
@@ -189,7 +215,7 @@ const InstructorsSection = () => {
               style={{ backgroundColor: "#0f437f" }}
             >
               <Plus size={20} />
-              Add Instructor
+              Add Course
             </button>
           </div>
         </div>
@@ -202,16 +228,19 @@ const InstructorsSection = () => {
                   ID
                 </th>
                 <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm">
-                  NAME
+                  TITLE
                 </th>
                 <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm">
-                  BIO
+                  DESCRIPTION
                 </th>
                 <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm">
-                  EMAIL
+                  PRICE
                 </th>
                 <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm">
-                  SOCIAL
+                  INSTRUCTOR
+                </th>
+                <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm">
+                  CATEGORY
                 </th>
                 <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm">
                   ACTIONS
@@ -219,88 +248,71 @@ const InstructorsSection = () => {
               </tr>
             </thead>
             <tbody>
-              {instructors.length === 0 ? (
+              {courses.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="6"
+                    colSpan="7"
                     className="py-8 px-6 text-center text-gray-500"
                   >
-                    No instructors found
+                    No courses found
                   </td>
                 </tr>
               ) : (
-                instructors.map((instructor, index) => (
+                courses.map((course, index) => (
                   <tr
-                    key={instructor.id}
+                    key={course.id}
                     className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                      index === instructors.length - 1 ? "border-b-0" : ""
+                      index === courses.length - 1 ? "border-b-0" : ""
                     }`}
                   >
-                    <td className="py-4 px-6 text-gray-600">{instructor.id}</td>
+                    <td className="py-4 px-6 text-gray-600">{course.id}</td>
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3">
-                        {instructor.img ? (
+                        {course.img ? (
                           <img
-                            src={instructor.img}
-                            alt={instructor.name}
-                            className="w-10 h-10 rounded-full object-cover"
+                            src={course.img}
+                            alt={course.title}
+                            className="w-12 h-12 rounded-lg object-cover"
                           />
                         ) : (
                           <div
-                            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold"
+                            className="w-12 h-12 rounded-lg flex items-center justify-center text-white font-semibold"
                             style={{ backgroundColor: "#064ea4" }}
                           >
-                            {instructor.name
-                              ? instructor.name[0].toUpperCase()
+                            {course.title
+                              ? course.title[0].toUpperCase()
                               : "N/A"}
                           </div>
                         )}
                         <span className="font-medium text-gray-900">
-                          {instructor.name || "N/A"}
+                          {course.title || "N/A"}
                         </span>
                       </div>
                     </td>
                     <td className="py-4 px-6">
                       <span className="text-sm text-gray-700 line-clamp-2">
-                        {instructor.bio || "N/A"}
+                        {course.description || "N/A"}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6">
+                      <span className="font-semibold text-green-600">
+                        ${course.price || "0.00"}
                       </span>
                     </td>
                     <td className="py-4 px-6">
                       <span className="text-sm text-gray-700">
-                        {instructor.email || "N/A"}
+                        {course.instructor?.name || "N/A"}
                       </span>
                     </td>
                     <td className="py-4 px-6">
-                      <div className="flex gap-2">
-                        {instructor.linkedin && (
-                          <a
-                            href={instructor.linkedin}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline text-sm"
-                          >
-                            LinkedIn
-                          </a>
-                        )}
-                        {instructor.twitter && (
-                          <a
-                            href={instructor.twitter}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-400 hover:underline text-sm"
-                          >
-                            Twitter
-                          </a>
-                        )}
-                        {!instructor.linkedin && !instructor.twitter && (
-                          <span className="text-sm text-gray-500">N/A</span>
-                        )}
-                      </div>
+                      <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                        {course.category?.name || "N/A"}
+                      </span>
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => handleDelete(instructor.id)}
+                          onClick={() => handleDelete(course.id)}
                           className="p-2 rounded-lg hover:bg-red-50 text-red-600 transition-colors"
                           title="Delete"
                         >
@@ -316,7 +328,7 @@ const InstructorsSection = () => {
         </div>
       </div>
 
-      {/* Add Instructor Modal */}
+      {/* Add Course Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -325,7 +337,7 @@ const InstructorsSection = () => {
               style={{ backgroundColor: "#e1edfb" }}
             >
               <h3 className="text-xl font-bold text-gray-900">
-                Add New Instructor
+                Add New Course
               </h3>
               <button
                 onClick={handleCloseModal}
@@ -338,82 +350,94 @@ const InstructorsSection = () => {
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Name <span className="text-red-500">*</span>
+                  Instructor <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.instructor_id}
+                  onChange={(e) =>
+                    setFormData({ ...formData, instructor_id: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Select Instructor</option>
+                  {instructors.map((instructor) => (
+                    <option key={instructor.id} value={instructor.id}>
+                      {instructor.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Category <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.category_id}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category_id: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Select Category</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Title <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  value={formData.name}
+                  value={formData.title}
                   onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
+                    setFormData({ ...formData, title: e.target.value })
                   }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter instructor name"
+                  placeholder="Enter course title"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Bio <span className="text-red-500">*</span>
+                  Price <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  value={formData.price}
+                  onChange={(e) =>
+                    setFormData({ ...formData, price: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter price"
+                  step="0.01"
+                  min="0"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Description <span className="text-red-500">*</span>
                 </label>
                 <textarea
-                  value={formData.bio}
+                  value={formData.description}
                   onChange={(e) =>
-                    setFormData({ ...formData, bio: e.target.value })
+                    setFormData({ ...formData, description: e.target.value })
                   }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                   rows="3"
-                  placeholder="Enter instructor bio"
+                  placeholder="Enter course description"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter email address"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  LinkedIn
-                </label>
-                <input
-                  type="url"
-                  value={formData.linkedin}
-                  onChange={(e) =>
-                    setFormData({ ...formData, linkedin: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="https://linkedin.com/in/..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Twitter
-                </label>
-                <input
-                  type="url"
-                  value={formData.twitter}
-                  onChange={(e) =>
-                    setFormData({ ...formData, twitter: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="https://twitter.com/..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Profile Image <span className="text-red-500">*</span>
+                  Course Image <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="file"
@@ -459,4 +483,4 @@ const InstructorsSection = () => {
   );
 };
 
-export default InstructorsSection;
+export default CoursesSection;

@@ -18,24 +18,24 @@ import CourseDetailPage from "./Pages/Course/Course";
 import Admin from "./Pages/Admin/Admin";
 import Cart from "./Pages/cart/Cart";
 import { CartProvider } from "./context/CartContext";
+import ProtectedAdminRoute from "./utils/ProtectedAdminRoute";
+import Error403 from "./Pages/Errors/Error403";
 
 function App() {
   return (
     <CartProvider>
       <Router>
         <Routes>
-          {/* Redirect root to login */}
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
 
-          {/* Auth routes */}
+          {/* Auth */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 
-          {/* Main app routes */}
+          {/* Main */}
           <Route path="/courses" element={<Courses />} />
           <Route path="/cart" element={<Cart />} />
-
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/teachers" element={<Teachers />} />
           <Route
@@ -43,12 +43,20 @@ function App() {
             element={<InstructorProfile />}
           />
           <Route path="/contact" element={<ContactPage />} />
-
           <Route path="/course/:courseId" element={<CourseDetailPage />} />
 
-          <Route path="/admin" element={<Admin />} />
+          {/* Protected admin route */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedAdminRoute>
+                <Admin />
+              </ProtectedAdminRoute>
+            }
+          />
 
-          {/* 404 */}
+          {/* Errors */}
+          <Route path="/403" element={<Error403 />} />
           <Route path="*" element={<Error404 />} />
         </Routes>
       </Router>
