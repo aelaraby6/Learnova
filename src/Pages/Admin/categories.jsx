@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { FolderOpen, Plus, Edit2, Trash2, X } from "lucide-react";
-import { get } from "../../utils/api";
+import { FolderOpen, Plus, Trash2, X } from "lucide-react";
+import { get, postFormData, del } from "../../utils/api";
 
 const CategoriesSection = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -17,12 +16,18 @@ const CategoriesSection = () => {
     fetchCategories();
   }, []);
 
+  // Get token from localStorage (adjust based on where you store it)
+  const getToken = () => {
+    return localStorage.getItem("token") || localStorage.getItem("authToken");
+  };
+
   const fetchCategories = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await get("categories");
+      const token = getToken();
+      const response = await get("categories", token);
 
       if (response.status && response.categories) {
         setCategories(response.categories);
@@ -39,41 +44,71 @@ const CategoriesSection = () => {
     }
   };
 
-  const handleOpenModal = (category = null) => {
-    if (category) {
-      setEditingCategory(category);
-      setFormData({
-        name: category.name,
-        description: category.description,
-      });
-    } else {
-      setEditingCategory(null);
-      setFormData({
-        name: "",
-        description: "",
-      });
-    }
+  const handleOpenModal = () => {
+    setFormData({
+      name: "",
+      description: "",
+    });
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingCategory(null);
     setFormData({
       name: "",
       description: "",
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log("Submitting:", formData);
-    handleCloseModal();
+  const handleSubmit = async () => {
+    if (!formData.name || !formData.description) {
+      setError("Please fill in all fields");
+      return;
+    }
+
+    try {
+      // Create FormData object
+      const formDataToSend = new FormData();
+      formDataToSend.append("name", formData.name);
+      formDataToSend.append("description", formData.description);
+
+      let token = getToken();
+
+      const response = await postFormData(
+        "admin/categories",
+        formDataToSend,
+        token
+      );
+
+      if (response.status || response.success) {
+        // Refresh categories list
+        await fetchCategories();
+        handleCloseModal();
+      } else {
+        setError("Failed to create category");
+      }
+    } catch (err) {
+      console.error("Error creating category:", err);
+      setError(err.message || "Failed to create category");
+    }
   };
 
   const handleDelete = async (categoryId) => {
     if (window.confirm("Are you sure you want to delete this category?")) {
-      console.log("Deleting category:", categoryId);
+      try {
+        let token = getToken();
+        const response = await del(`admin/categories/${categoryId}`, token);
+
+        if (response.status || response.success) {
+          // Refresh categories list
+          await fetchCategories();
+        } else {
+          setError("Failed to delete category");
+        }
+      } catch (err) {
+        console.error("Error deleting category:", err);
+        setError(err.message || "Failed to delete category");
+      }
     }
   };
 
@@ -122,7 +157,7 @@ const CategoriesSection = () => {
               </div>
             </div>
             <button
-              onClick={() => handleOpenModal()}
+              onClick={handleOpenModal}
               className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium transition-all hover:opacity-90 shadow-md"
               style={{ backgroundColor: "#0f437f" }}
             >
@@ -192,13 +227,6 @@ const CategoriesSection = () => {
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => handleOpenModal(category)}
-                          className="p-2 rounded-lg hover:bg-blue-50 text-blue-600 transition-colors"
-                          title="Edit"
-                        >
-                          <Edit2 size={18} />
-                        </button>
-                        <button
                           onClick={() => handleDelete(category.id)}
                           className="p-2 rounded-lg hover:bg-red-50 text-red-600 transition-colors"
                           title="Delete"
@@ -215,7 +243,7 @@ const CategoriesSection = () => {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Add Category Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
@@ -224,7 +252,7 @@ const CategoriesSection = () => {
               style={{ backgroundColor: "#e1edfb" }}
             >
               <h3 className="text-xl font-bold text-gray-900">
-                {editingCategory ? "Edit Category" : "Add New Category"}
+                Add New Category
               </h3>
               <button
                 onClick={handleCloseModal}
@@ -279,7 +307,7 @@ const CategoriesSection = () => {
                   className="flex-1 px-4 py-2 rounded-lg text-white font-medium transition-all hover:opacity-90 shadow-md"
                   style={{ backgroundColor: "#0f437f" }}
                 >
-                  {editingCategory ? "Update" : "Create"}
+                  Create
                 </button>
               </div>
             </div>
