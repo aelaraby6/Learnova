@@ -22,6 +22,7 @@ A Full-Stack E-learning Platform designed to simplify and enhance online educati
 ## 🛠️ Built With
 
 **Frontend:** React.js, React Router 
+
 **Backend:** Laravel, MySQL, JWT Authentication
 
 ## ✨ Features
